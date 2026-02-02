@@ -1,0 +1,79 @@
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    user: root
+    expose:
+      - "8080"
+      - "50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ./jenkins/jobs:/var/jenkins_home/jobs
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - devops_network
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: backend
+    expose:
+      - "3000"
+    environment:
+      - JENKINS_URL=http://jenkins:8080
+      - JENKINS_USER=V_jenkins
+      - JENKINS_TOKEN=1191f1a0ae74dabbfb08a5dede9e7a5978
+      - JWT_SECRET=b69de19a97706d647856e40a4146e43a
+      - NODE_ENV=production
+    depends_on:
+      - jenkins
+    networks:
+      - devops_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    expose:
+      - "80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - devops_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "5111:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    networks:
+      - devops_network
+    restart: unless-stopped
+
+volumes:
+  jenkins_home:
+
+networks:
+  devops_network:
+    driver: bridge

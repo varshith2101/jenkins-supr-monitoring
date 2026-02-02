@@ -1,0 +1,84 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.40">
+  <description>Test pipeline for monitoring</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.90">
+    <script>pipeline {
+    agent any
+
+    stages {
+        stage(&apos;Stage 1: Checkout&apos;) {
+            steps {
+                echo &apos;Stage 1: Checking out code...&apos;
+                sleep 2
+                echo &apos;Stage 1: Complete&apos;
+            }
+        }
+
+        stage(&apos;Stage 2: Build&apos;) {
+            steps {
+                echo &apos;Stage 2: Building application...&apos;
+                sleep 3
+                echo &apos;Stage 2: Build successful&apos;
+            }
+        }
+
+        stage(&apos;Stage 3: Test&apos;) {
+            steps {
+                echo &apos;Stage 3: Running tests...&apos;
+                sleep 4
+                echo &apos;Stage 3: All tests passed&apos;
+            }
+        }
+
+        stage(&apos;Stage 4: Deploy&apos;) {
+            steps {
+                echo &apos;Stage 4: Deploying application...&apos;
+                sleep 5
+                echo &apos;Stage 4: Deployment successful&apos;
+
+                script {
+                    def random = new Random()
+                    def success = random.nextInt(10) &gt; 2
+
+                    if (success) {
+                        echo &apos;Stage 4: DEPLOYMENT COMPLETED SUCCESSFULLY&apos;
+                    } else {
+                        echo &apos;Stage 4: DEPLOYMENT ENCOUNTERED ISSUES&apos;
+                        error(&apos;Deployment failed - simulated failure&apos;)
+                    }
+                }
+            }
+        }
+
+        stage(&apos;Stage 5: Verification&apos;) {
+            steps {
+                echo &apos;Stage 5: Verifying deployment...&apos;
+                sleep 2
+                echo &apos;Stage 5: Verification complete&apos;
+            }
+        }
+    }
+
+    post {
+        success {
+            echo &apos;Pipeline completed successfully!&apos;
+        }
+        failure {
+            echo &apos;Pipeline failed!&apos;
+        }
+        always {
+            echo &apos;Pipeline execution finished.&apos;
+        }
+    }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
