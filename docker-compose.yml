@@ -1,4 +1,43 @@
 services:
+  db:
+    image: postgres:15-alpine
+    container_name: jenkins-monitoring-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-jenkins_monitoring}
+      POSTGRES_USER: ${DB_USER:-jenkins_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - backend_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-jenkins_user} -d ${DB_NAME:-jenkins_monitoring}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  db_backup:
+    image: postgres:15-alpine
+    container_name: db_backup
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${DB_NAME:-jenkins_monitoring}
+      POSTGRES_USER: ${DB_USER:-jenkins_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      BACKUP_KEEP_COUNT: ${BACKUP_KEEP_COUNT:-4}
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/backup.sh:ro
+      - ./scripts/backup-cron:/backup-cron:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend_network
+    entrypoint: /bin/sh -c "chmod +x /backup.sh && crontab /backup-cron && crond -f"
+    restart: unless-stopped
+
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins
@@ -20,15 +59,20 @@ services:
     expose:
       - "3000"
     environment:
-      - JENKINS_URL=http://jenkins:8080
-      - JENKINS_USER=V_jenkins
-      - JENKINS_TOKEN=1191f1a0ae74dabbfb08a5dede9e7a5978
-      - JWT_SECRET=b69de19a97706d647856e40a4146e43a
-      - NODE_ENV=production
+      - JENKINS_URL=${JENKINS_URL}
+      - JENKINS_USER=${JENKINS_USER}
+      - JENKINS_TOKEN=${JENKINS_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+      - NODE_ENV=${NODE_ENV}
+      - DATABASE_URL=${DATABASE_URL}
     depends_on:
-      - jenkins
+      jenkins:
+        condition: service_started
+      db:
+        condition: service_healthy
     networks:
       - devops_network
+      - backend_network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
@@ -73,7 +117,11 @@ services:
 
 volumes:
   jenkins_home:
+  db_data:
 
 networks:
   devops_network:
     driver: bridge
+  backend_network:
+    driver: bridge
+    internal: true

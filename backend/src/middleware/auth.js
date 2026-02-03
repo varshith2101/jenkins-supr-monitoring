@@ -3,7 +3,7 @@ import { config } from '../config/config.js';
 
 export const rolePermissions = {
   admin: ['build:read', 'build:trigger', 'user:manage'],
-  operator: ['build:read', 'build:trigger'],
+  user: ['build:read', 'build:trigger'],
   viewer: ['build:read'],
 };
 

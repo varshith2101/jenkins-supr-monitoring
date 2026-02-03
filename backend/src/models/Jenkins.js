@@ -142,7 +142,7 @@ class JenkinsModel {
     try {
       console.log(`[JENKINS] Triggering build for job: ${jobName}`);
       console.log(`[JENKINS] Jenkins URL: ${this.jenkinsUrl}`);
-      console.log(`[JENKINS] Using credentials: ${this.auth.username} / ${this.auth.password.substring(0, 4)}...`);
+      console.log(`[JENKINS] Using credentials for user: ${this.auth.username}`);
 
       const safeJobName = encodeURIComponent(jobName);
       const buildUrl = `${this.jenkinsUrl}/job/${safeJobName}/build`;

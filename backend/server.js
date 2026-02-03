@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { config } from './src/config/config.js';
+import { setupDatabase } from './src/config/setupDatabase.js';
 import authRoutes from './src/routes/auth.js';
 import buildsRoutes from './src/routes/builds.js';
 import usersRoutes from './src/routes/users.js';
@@ -33,9 +34,22 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Backend server running on port ${PORT}`);
-  console.log(`Jenkins URL: ${config.jenkinsUrl}`);
-  console.log(`Environment: ${config.nodeEnv}`);
-});
+// Initialize database and start server
+async function startServer() {
+  try {
+    // Setup database connection and seed initial data
+    await setupDatabase();
+
+    // Start server
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Backend server running on port ${PORT}`);
+      console.log(`Jenkins URL: ${config.jenkinsUrl}`);
+      console.log(`Environment: ${config.nodeEnv}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();

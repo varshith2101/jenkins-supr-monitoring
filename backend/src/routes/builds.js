@@ -1,7 +1,8 @@
 import express from 'express';
 import JenkinsModel from '../models/Jenkins.js';
 import { authenticateToken, authorizePermissions } from '../middleware/auth.js';
-import UserModel from '../models/User.js';
+import UserDB from '../models/UserDB.js';
+import AuditLog from '../models/AuditLog.js';
 
 const router = express.Router();
 const jenkinsModel = new JenkinsModel();
@@ -55,7 +56,7 @@ router.get(
   async (req, res) => {
     try {
       const data = await jenkinsModel.getJobs();
-      const user = UserModel.findByUsername(req.user.username);
+      const user = await UserDB.findByUsername(req.user.username);
 
       // Admins see all jobs; others see only assigned pipelines
       if (user?.role === 'admin' || !user?.pipelines || user.pipelines.length === 0) {
@@ -107,7 +108,12 @@ router.post(
 
     console.log(`[BUILD TRIGGER] User: ${req.user.username}, Role: ${req.user.role}, Job: ${jobName}`);
 
+    const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const userAgent = req.get('user-agent');
+
     try {
+      const user = await UserDB.findByUsername(req.user.username);
+
       let result;
       if (parameters && Object.keys(parameters).length > 0) {
         console.log(`[BUILD TRIGGER] With parameters:`, parameters);
@@ -116,9 +122,37 @@ router.post(
         result = await jenkinsModel.triggerBuild(jobName);
       }
       console.log(`[BUILD TRIGGER] Success:`, result);
+
+      // Log successful build trigger
+      await AuditLog.logAction({
+        userId: user?.id,
+        username: req.user.username,
+        action: 'trigger_build',
+        resource: jobName,
+        details: { parameters, result },
+        ipAddress,
+        userAgent,
+        success: true,
+      });
+
       res.json(result);
     } catch (error) {
       console.error(`[BUILD TRIGGER] Error:`, error.message);
+
+      // Log failed build trigger
+      const user = await UserDB.findByUsername(req.user.username);
+      await AuditLog.logAction({
+        userId: user?.id,
+        username: req.user.username,
+        action: 'trigger_build',
+        resource: jobName,
+        details: { parameters },
+        ipAddress,
+        userAgent,
+        success: false,
+        errorMessage: error.message,
+      });
+
       res.status(500).json({
         error: 'Failed to trigger build',
         message: error.message,

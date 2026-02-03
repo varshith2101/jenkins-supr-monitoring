@@ -1,7 +1,11 @@
 FROM node:18-alpine
 
-# Install wget for health checks
-RUN apk add --no-cache wget
+# Install build dependencies for native modules (bcrypt) and wget for health checks
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    wget
 
 WORKDIR /app
 

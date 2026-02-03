@@ -26,7 +26,7 @@ function Dashboard({ user, onLogout }) {
   const [showParametersModal, setShowParametersModal] = useState(false);
   const [jobParameters, setJobParameters] = useState([]);
 
-  const canTrigger = ['admin', 'operator'].includes(user?.role);
+  const canTrigger = ['admin', 'user'].includes(user?.role);
   const canManageUsers = user?.role === 'admin';
 
   // Fetch available jobs when component mounts

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 const roles = [
   { value: 'admin', label: 'Admin' },
-  { value: 'operator', label: 'Operator' },
+  { value: 'user', label: 'User' },
   { value: 'viewer', label: 'Viewer' },
 ];
 

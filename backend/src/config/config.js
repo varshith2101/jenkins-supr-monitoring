@@ -1,12 +1,19 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from project root (2 levels up from config directory)
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 export const config = {
   port: process.env.PORT || 3000,
-  jwtSecret: process.env.JWT_SECRET || 'your-secret-key-change-this-in-production',
-  jenkinsUrl: process.env.JENKINS_URL || 'http://jenkins:8080',
-  jenkinsUser: process.env.JENKINS_USER || 'V_jenkins',
-  jenkinsToken: process.env.JENKINS_TOKEN || '1191f1a0ae74dabbfb08a5dede9e7a5978',
+  jwtSecret: process.env.JWT_SECRET || '',
+  jenkinsUrl: process.env.JENKINS_URL || '',
+  jenkinsUser: process.env.JENKINS_USER || '',
+  jenkinsToken: process.env.JENKINS_TOKEN || '',
   nodeEnv: process.env.NODE_ENV || 'development',
+  databaseUrl: process.env.DATABASE_URL || '',
 };
