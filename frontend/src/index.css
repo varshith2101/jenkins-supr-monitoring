@@ -446,32 +446,16 @@ body::after {
 .login-page {
   min-height: 100vh;
   display: flex;
-  flex-direction: row;
   background: var(--bg-base);
   position: relative;
   overflow: hidden;
 }
 
-
-.login-screen {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem;
-  position: relative;
-  z-index: 100;
-}
-
 .login-container {
   width: 100%;
-  max-width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  align-items: center;
   min-height: 100vh;
-  padding: 2rem;
   position: relative;
 }
 
@@ -486,14 +470,113 @@ body::after {
   transform: translateX(-50%);
   box-shadow: 0 0 20px var(--primary-glow);
   animation: pulseGlow 3s ease-in-out infinite;
+  z-index: 10;
 }
 
 .login-logo-section {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  background: #0a0a0f;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated gradient blobs background */
+.login-logo-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(0, 82, 204, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 168, 216, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 40% 70%, rgba(0, 153, 204, 0.35) 0%, transparent 50%);
+  animation: blobFloat 15s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* Geometric grid overlay */
+.login-logo-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(0, 168, 216, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 168, 216, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+  animation: gridSlide 20s linear infinite;
+  z-index: 1;
+}
+
+.login-logo-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 3;
+}
+
+/* Floating particles */
+.login-logo-content::before {
+  content: '';
+  position: absolute;
+  width: 300%;
+  height: 300%;
+  top: -100%;
+  left: -100%;
+  background-image: 
+    radial-gradient(circle, rgba(0, 168, 216, 0.4) 2px, transparent 2px),
+    radial-gradient(circle, rgba(0, 82, 204, 0.3) 1px, transparent 1px),
+    radial-gradient(circle, rgba(0, 153, 204, 0.35) 1.5px, transparent 1.5px);
+  background-size: 200px 200px, 150px 150px, 250px 250px;
+  background-position: 0 0, 50px 50px, 100px 100px;
+  animation: particleDrift 30s linear infinite;
+  opacity: 0.4;
+  z-index: -1;
+  pointer-events: none;
+}
+
+@keyframes blobFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+  50% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  75% {
+    transform: translate(20px, 30px) scale(1.05);
+  }
+}
+
+@keyframes gridSlide {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(50px);
+  }
+}
+
+@keyframes particleDrift {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate(100px, 100px) rotate(360deg);
+  }
 }
 
 .login-container img {
@@ -510,9 +593,65 @@ body::after {
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  background: #000000;
+  position: relative;
+  overflow: hidden;
 }
 
-.login-container h1 {
+/* Dark textured background for right side */
+.login-form-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.01) 0px, transparent 1px, transparent 2px, rgba(255, 255, 255, 0.01) 3px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.01) 0px, transparent 1px, transparent 2px, rgba(255, 255, 255, 0.01) 3px);
+  background-size: 3px 3px;
+  opacity: 0.3;
+  z-index: 1;
+}
+
+.login-form-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 80% 20%, rgba(0, 82, 204, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 20% 80%, rgba(0, 168, 216, 0.03) 0%, transparent 40%);
+  z-index: 1;
+}
+
+.login-form-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-form-title {
+  font-size: clamp(2rem, 5vw, 2.5rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2rem;
+  text-align: center;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #ffffff, var(--primary-light));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+.login-logo-content h1 {
   font-size: clamp(1.75rem, 5vw, 2.25rem);
   font-weight: 700;
   margin-bottom: 0.75rem;
@@ -536,13 +675,6 @@ body::after {
   text-transform: uppercase;
 }
 
-.login-form-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
-
 .login-form {
   background: var(--bg-panel);
   border-radius: 1rem;
@@ -554,7 +686,6 @@ body::after {
   position: relative;
   animation: fadeInUp 0.6s ease-out;
   width: 100%;
-  max-width: 420px;
   color: var(--text-primary);
   transition: all 0.3s ease;
 }
@@ -1552,12 +1683,29 @@ body::after {
 
   .login-container {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
     min-height: auto;
   }
 
   .login-container::after {
     display: none;
+  }
+
+  .login-logo-section {
+    min-height: 40vh;
+    padding: 3rem 1.5rem;
+  }
+
+  .login-form-section {
+    min-height: 60vh;
+    padding: 3rem 1.5rem;
+  }
+
+  .login-logo-content img {
+    max-width: 200px;
+  }
+
+  .login-form-container {
+    max-width: 100%;
   }
 }
 

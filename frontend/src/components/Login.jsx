@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { authService } from '../services/authService';
-import Navbar from './Navbar';
 import logo from '../main-logo-2.png';
 
 function Login({ onLogin }) {
@@ -33,38 +32,40 @@ function Login({ onLogin }) {
 
   return (
     <div className="login-page">
-      <Navbar />
-      <div className="login-screen">
-        <div className="login-container">
-          <div className="login-logo-section">
+      <div className="login-container">
+        <div className="login-logo-section">
+          <div className="login-logo-content">
             <img src={logo} alt="Suprajit Logo" />
             <h1>Remote Jenkins</h1>
             <p className="login-subtitle">Controlled Access</p>
           </div>
-          <div className="login-form-section">
+        </div>
+        <div className="login-form-section">
+          <div className="login-form-container">
+            <h2 className="login-form-title">Login</h2>
             <form className="login-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <input
-                  type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <button type="submit" className="login-button" disabled={loading}>
-                {loading ? 'Logging in...' : 'Login'}
-              </button>
-            </form>
+            <div className="form-group">
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <button type="submit" className="login-button" disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
             {error && <div className="error-message">{error}</div>}
           </div>
         </div>
