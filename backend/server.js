@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { config } from './src/config/config.js';
 import { setupDatabase } from './src/config/setupDatabase.js';
+import { rateLimiterMiddleware } from './src/middleware/rateLimiter.js';
 import authRoutes from './src/routes/auth.js';
 import buildsRoutes from './src/routes/builds.js';
 import usersRoutes from './src/routes/users.js';
@@ -12,6 +13,7 @@ const PORT = config.port;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/api', rateLimiterMiddleware);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

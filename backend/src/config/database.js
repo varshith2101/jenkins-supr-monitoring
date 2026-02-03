@@ -35,10 +35,17 @@ export async function initDatabase() {
         password VARCHAR(255) NOT NULL,
         role VARCHAR(50) NOT NULL DEFAULT 'viewer',
         display_name VARCHAR(255),
+        manager VARCHAR(255),
         pipelines TEXT[] DEFAULT '{}',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
+    `);
+
+    // Add new columns for schema changes (non-destructive)
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS manager VARCHAR(255)
     `);
 
     // Create audit_logs table

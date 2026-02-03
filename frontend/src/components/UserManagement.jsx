@@ -20,10 +20,12 @@ function UserManagement({
     password: '',
     role: 'viewer',
     displayName: '',
+    manager: '',
     pipelines: [],
   });
   const [submitting, setSubmitting] = useState(false);
   const [actionError, setActionError] = useState('');
+  const [pipelineSearch, setPipelineSearch] = useState('');
 
   const handleChange = (field) => (event) => {
     setForm((prev) => ({ ...prev, [field]: event.target.value }));
@@ -40,6 +42,7 @@ function UserManagement({
         password: '',
         role: 'viewer',
         displayName: '',
+        manager: '',
         pipelines: [],
       });
     } catch (err) {
@@ -49,10 +52,19 @@ function UserManagement({
     }
   };
 
+  const filteredJobs = availableJobs?.filter((job) =>
+    job.toLowerCase().includes(pipelineSearch.trim().toLowerCase())
+  );
+
   return (
     <div className="user-management">
-      <form className="user-form" onSubmit={handleCreate}>
-        <h3>Create user</h3>
+      <form className="user-form user-section" onSubmit={handleCreate}>
+        <div className="user-section-header">
+          <div>
+            <h3>Create user</h3>
+            <p className="muted-text">Add a new team member and assign access.</p>
+          </div>
+        </div>
         <div className="form-row">
           <input
             type="text"
@@ -84,12 +96,28 @@ function UserManagement({
             ))}
           </select>
         </div>
+        <div className="form-row">
+          <input
+            type="text"
+            placeholder="Manager"
+            value={form.manager}
+            onChange={handleChange('manager')}
+          />
+        </div>
         <div className="pipeline-selector">
           <label>Accessible Pipelines (leave empty for all):</label>
+          <div className="pipeline-search">
+            <input
+              type="text"
+              placeholder="Search pipelines..."
+              value={pipelineSearch}
+              onChange={(e) => setPipelineSearch(e.target.value)}
+            />
+          </div>
           <div className="pipeline-list">
-            {availableJobs && availableJobs.length > 0 ? (
-              availableJobs.map((job) => (
-                <label key={job} className="pipeline-checkbox">
+            {filteredJobs && filteredJobs.length > 0 ? (
+              filteredJobs.map((job) => (
+                <label key={job} className="pipeline-checkbox pipeline-checkbox--fancy">
                   <input
                     type="checkbox"
                     checked={form.pipelines.includes(job)}
@@ -107,6 +135,7 @@ function UserManagement({
                       }
                     }}
                   />
+                  <span className="pipeline-check"></span>
                   <span>{job}</span>
                 </label>
               ))
@@ -121,8 +150,13 @@ function UserManagement({
         {actionError && <div className="error-message">{actionError}</div>}
       </form>
 
-      <div className="user-list">
-        <h3>Active users</h3>
+      <div className="user-list user-section">
+        <div className="user-section-header">
+          <div>
+            <h3>Active users</h3>
+            <p className="muted-text">Manage roles, pipelines, and ownership.</p>
+          </div>
+        </div>
         {loading ? (
           <div className="muted-card">Loading users...</div>
         ) : error ? (
@@ -133,9 +167,10 @@ function UserManagement({
               .filter((u) => u.role !== 'admin')
               .map((user) => (
               <div key={user.username} className="user-row">
-                <div>
+                <div className="user-info-col">
                   <p className="user-name">{user.displayName || user.username}</p>
                   <p className="user-handle">@{user.username}</p>
+                  <p className="user-meta">Manager: {user.manager || 'N/A'}</p>
                 </div>
                 <div className="user-actions">
                   <select
@@ -162,9 +197,17 @@ function UserManagement({
                       Pipelines
                     </summary>
                     <div className="pipeline-list">
-                      {availableJobs && availableJobs.length > 0 ? (
-                        availableJobs.map((job) => (
-                          <label key={job} className="pipeline-checkbox">
+                      <div className="pipeline-search">
+                        <input
+                          type="text"
+                          placeholder="Search pipelines..."
+                          value={pipelineSearch}
+                          onChange={(e) => setPipelineSearch(e.target.value)}
+                        />
+                      </div>
+                      {filteredJobs && filteredJobs.length > 0 ? (
+                        filteredJobs.map((job) => (
+                          <label key={job} className="pipeline-checkbox pipeline-checkbox--fancy">
                             <input
                               type="checkbox"
                               checked={
@@ -187,6 +230,7 @@ function UserManagement({
                                 }
                               }}
                             />
+                            <span className="pipeline-check"></span>
                             <span>{job}</span>
                           </label>
                         ))

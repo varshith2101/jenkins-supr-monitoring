@@ -20,4 +20,9 @@ export const config = {
   adminPassword: process.env.ADMIN_PASSWORD || '',
   viewerUsername: process.env.VIEWER_USERNAME || '',
   viewerPassword: process.env.VIEWER_PASSWORD || '',
+  rateLimit: {
+    points: Number(process.env.RATE_LIMIT_POINTS || 120),
+    durationSeconds: Number(process.env.RATE_LIMIT_DURATION || 60),
+    blockSeconds: Number(process.env.RATE_LIMIT_BLOCK_DURATION || 60),
+  },
 };

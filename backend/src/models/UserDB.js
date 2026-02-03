@@ -67,13 +67,14 @@ const UserDB = {
   async getAllUsers() {
     try {
       const result = await pool.query(
-        'SELECT id, username, role, display_name, pipelines, created_at, updated_at FROM users ORDER BY created_at DESC'
+        'SELECT id, username, role, display_name, manager, pipelines, created_at, updated_at FROM users ORDER BY created_at DESC'
       );
       return result.rows.map(user => ({
         id: user.id,
         username: user.username,
         role: user.role,
         displayName: user.display_name,
+        manager: user.manager,
         pipelines: user.pipelines || [],
         createdAt: user.created_at,
         updatedAt: user.updated_at,
@@ -87,7 +88,7 @@ const UserDB = {
   /**
    * Create new user
    */
-  async create({ username, password, role = 'viewer', displayName, pipelines = [] }) {
+  async create({ username, password, role = 'viewer', displayName, manager, pipelines = [] }) {
     try {
       // Check if user already exists
       const existing = await this.findByUsername(username);
@@ -100,8 +101,8 @@ const UserDB = {
 
       // Insert user
       const result = await pool.query(
-        'INSERT INTO users (username, password, role, display_name, pipelines) VALUES ($1, $2, $3, $4, $5) RETURNING id, username, role, display_name, pipelines, created_at, updated_at',
-        [username, hashedPassword, role, displayName || username, pipelines]
+        'INSERT INTO users (username, password, role, display_name, manager, pipelines) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, role, display_name, manager, pipelines, created_at, updated_at',
+        [username, hashedPassword, role, displayName || username, manager || null, pipelines]
       );
 
       const user = result.rows[0];
@@ -110,6 +111,7 @@ const UserDB = {
         username: user.username,
         role: user.role,
         displayName: user.display_name,
+        manager: user.manager,
         pipelines: user.pipelines || [],
         createdAt: user.created_at,
         updatedAt: user.updated_at,
@@ -150,6 +152,11 @@ const UserDB = {
         values.push(updates.displayName);
       }
 
+      if (updates.manager !== undefined) {
+        updateFields.push(`manager = $${paramCount++}`);
+        values.push(updates.manager || null);
+      }
+
       if (updates.pipelines !== undefined) {
         updateFields.push(`pipelines = $${paramCount++}`);
         values.push(Array.isArray(updates.pipelines) ? updates.pipelines : []);
@@ -168,7 +175,7 @@ const UserDB = {
         UPDATE users
         SET ${updateFields.join(', ')}
         WHERE username = $${paramCount}
-        RETURNING id, username, role, display_name, pipelines, created_at, updated_at
+        RETURNING id, username, role, display_name, manager, pipelines, created_at, updated_at
       `;
 
       const result = await pool.query(query, values);
@@ -179,6 +186,7 @@ const UserDB = {
         username: updatedUser.username,
         role: updatedUser.role,
         displayName: updatedUser.display_name,
+        manager: updatedUser.manager,
         pipelines: updatedUser.pipelines || [],
         createdAt: updatedUser.created_at,
         updatedAt: updatedUser.updated_at,
