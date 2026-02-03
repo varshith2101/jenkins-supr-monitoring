@@ -23,7 +23,7 @@ function AccessDenied({ user, onLogout, onBack }) {
         </div>
       </header>
 
-      <div className="dashboard-container">
+      <div className="dashboard-container dashboard-container-narrow">
         <section className="dashboard-grid dashboard-grid-single">
           <div className="panel panel-primary">
             <div className="muted-card">

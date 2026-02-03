@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from './Navbar';
-import JobSelector from './JobSelector';
 import BuildInfo from './BuildInfo';
+import PipelineCard from './PipelineCard';
 import ParametersModal from './ParametersModal';
 import { jenkinsService } from '../services/jenkinsService';
 
@@ -19,6 +19,9 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [showParametersModal, setShowParametersModal] = useState(false);
   const [jobParameters, setJobParameters] = useState([]);
+  const [pipelineSummaries, setPipelineSummaries] = useState([]);
+  const [summariesLoading, setSummariesLoading] = useState(false);
+  const [viewMode, setViewMode] = useState('list');
 
   const canTrigger = ['admin', 'user'].includes(user?.role);
 
@@ -28,7 +31,7 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
   }, []);
 
   useEffect(() => {
-    if (selectedJob) {
+    if (viewMode === 'detail' && selectedJob) {
       fetchBuildInfo();
       startAutoRefresh();
     } else {
@@ -36,7 +39,7 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
     }
 
     return () => stopAutoRefresh();
-  }, [selectedJob]);
+  }, [selectedJob, viewMode]);
 
   const fetchJobs = async () => {
     setJobsLoading(true);
@@ -44,7 +47,9 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
 
     try {
       const data = await jenkinsService.getJobs();
-      setJobs(data.jobs || []);
+      const jobList = data.jobs || [];
+      setJobs(jobList);
+      await fetchPipelineSummaries(jobList);
     } catch (err) {
       if (err.response?.status === 401 || err.response?.status === 403) {
         onLogout();
@@ -53,6 +58,42 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
       }
     } finally {
       setJobsLoading(false);
+    }
+  };
+
+  const fetchPipelineSummaries = async (jobList = jobs) => {
+    if (!jobList || jobList.length === 0) {
+      setPipelineSummaries([]);
+      return;
+    }
+
+    setSummariesLoading(true);
+
+    try {
+      const results = await Promise.allSettled(
+        jobList.map((job) => jenkinsService.getBuilds(job.name))
+      );
+
+      const summaries = jobList.map((job, index) => {
+        const result = results[index];
+        if (result.status === 'fulfilled') {
+          return {
+            name: job.name,
+            lastBuild: result.value.lastBuild || null,
+          };
+        }
+        return {
+          name: job.name,
+          lastBuild: null,
+          error: true,
+        };
+      });
+
+      setPipelineSummaries(summaries);
+    } catch (err) {
+      setPipelineSummaries(jobList.map((job) => ({ name: job.name, lastBuild: null, error: true })));
+    } finally {
+      setSummariesLoading(false);
     }
   };
 
@@ -134,8 +175,17 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
     }
   };
 
-  const handleJobChange = (jobName) => {
+  const handlePipelineSelect = (jobName) => {
     setSelectedJob(jobName);
+    setBuildData(null);
+    setError('');
+    setTriggerMessage('');
+    setViewMode('detail');
+  };
+
+  const handleBackToList = () => {
+    setViewMode('list');
+    setSelectedJob('');
     setBuildData(null);
     setError('');
     setTriggerMessage('');
@@ -170,40 +220,89 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
         </div>
       </header>
 
-      <div className="dashboard-container">
+      <div className="dashboard-container dashboard-container-narrow">
         <section className="dashboard-grid dashboard-grid-single">
           <div className="panel panel-primary">
-            <div className="panel-header">
-              <h2>Assigned Pipelines</h2>
-              {lastUpdated && (
-                <span className="panel-meta">Updated {lastUpdated.toLocaleTimeString()}</span>
-              )}
-            </div>
+            {viewMode === 'list' ? (
+              <>
+                <div className="panel-header">
+                  <h2>Assigned Pipelines</h2>
+                  {lastUpdated && (
+                    <span className="panel-meta">Updated {lastUpdated.toLocaleTimeString()}</span>
+                  )}
+                </div>
 
-            <JobSelector
-              selectedJob={selectedJob}
-              onJobChange={handleJobChange}
-              onRefresh={handleRefresh}
-              onTrigger={handleTriggerBuild}
-              loading={loading}
-              triggering={triggering}
-              canTrigger={canTrigger}
-              triggerMessage={triggerMessage}
-              jobs={jobs}
-              jobsLoading={jobsLoading}
-              jobsError={jobsError}
-            />
+                {jobsError && <div className="error-message">{jobsError}</div>}
 
-            {error && <div className="error-message">{error}</div>}
+                {jobsLoading || summariesLoading ? (
+                  <div className="loading">
+                    <div className="spinner"></div>
+                    <p>Loading pipelines...</p>
+                  </div>
+                ) : pipelineSummaries.length === 0 ? (
+                  <div className="muted-card">No pipelines available.</div>
+                ) : (
+                  <div className="pipeline-card-list">
+                    {pipelineSummaries.map((pipeline) => (
+                      <PipelineCard
+                        key={pipeline.name}
+                        jobName={pipeline.name}
+                        lastBuild={pipeline.lastBuild}
+                        hasError={pipeline.error}
+                        onReadMore={() => handlePipelineSelect(pipeline.name)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="panel-header">
+                  <div className="panel-header-main">
+                    <button className="ghost-button" type="button" onClick={handleBackToList}>
+                      Back
+                    </button>
+                    <h2>{selectedJob}</h2>
+                  </div>
+                  {lastUpdated && (
+                    <span className="panel-meta">Updated {lastUpdated.toLocaleTimeString()}</span>
+                  )}
+                </div>
 
-            {loading && !buildData && (
-              <div className="loading">
-                <div className="spinner"></div>
-                <p>Loading build intelligence...</p>
-              </div>
+                <div className="pipeline-actions">
+                  <div className="job-actions">
+                    <button
+                      className="ghost-button"
+                      onClick={handleRefresh}
+                      disabled={!selectedJob || loading}
+                    >
+                      {loading ? 'Refreshing...' : 'Refresh'}
+                    </button>
+                    <button
+                      className="primary-button"
+                      onClick={handleTriggerBuild}
+                      disabled={!selectedJob || triggering || !canTrigger}
+                    >
+                      {triggering ? 'Triggering...' : 'Trigger Build'}
+                    </button>
+                  </div>
+                  {triggerMessage && (
+                    <div className="status-message">{triggerMessage}</div>
+                  )}
+                </div>
+
+                {error && <div className="error-message">{error}</div>}
+
+                {loading && !buildData && (
+                  <div className="loading">
+                    <div className="spinner"></div>
+                    <p>Loading build intelligence...</p>
+                  </div>
+                )}
+
+                {buildData && <BuildInfo data={buildData} />}
+              </>
             )}
-
-            {buildData && <BuildInfo data={buildData} />}
           </div>
         </section>
       </div>
