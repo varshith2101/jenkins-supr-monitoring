@@ -14,7 +14,7 @@ function JobSelector({
   return (
     <div className="job-selector">
       <div className="job-select-row">
-        <label htmlFor="job-select">Jenkins Job</label>
+        <label htmlFor="job-select">Pipelines</label>
         <select
           id="job-select"
           className="job-select"

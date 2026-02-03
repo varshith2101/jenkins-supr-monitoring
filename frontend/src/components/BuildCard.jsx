@@ -15,12 +15,12 @@ function BuildCard({ build }) {
           {formatStatus(build.status)}
         </div>
       </div>
-      <div className="build-detail">
-        <div className="build-detail-label">Stage 4 Status</div>
-        <div className={`status-pill ${getStatusClass(build.stage4Status)}`}>
-          {formatStatus(build.stage4Status)}
+      {build.currentStage && build.status === 'IN_PROGRESS' && (
+        <div className="build-detail">
+          <div className="build-detail-label">Current Stage</div>
+          <div className="build-detail-value stage-indicator">{build.currentStage}</div>
         </div>
-      </div>
+      )}
       <div className="build-detail">
         <div className="build-detail-label">Duration</div>
         <div className="build-detail-value">{formatDuration(build.duration)}</div>

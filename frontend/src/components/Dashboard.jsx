@@ -3,6 +3,7 @@ import Navbar from './Navbar';
 import JobSelector from './JobSelector';
 import BuildInfo from './BuildInfo';
 import UserManagement from './UserManagement';
+import ParametersModal from './ParametersModal';
 import { jenkinsService } from '../services/jenkinsService';
 import { userService } from '../services/userService';
 
@@ -22,6 +23,8 @@ function Dashboard({ user, onLogout }) {
   const [usersError, setUsersError] = useState('');
   const [lastUpdated, setLastUpdated] = useState(null);
   const [allAvailableJobs, setAllAvailableJobs] = useState([]);
+  const [showParametersModal, setShowParametersModal] = useState(false);
+  const [jobParameters, setJobParameters] = useState([]);
 
   const canTrigger = ['admin', 'operator'].includes(user?.role);
   const canManageUsers = user?.role === 'admin';
@@ -89,12 +92,32 @@ function Dashboard({ user, onLogout }) {
 
   const handleTriggerBuild = async () => {
     if (!selectedJob) return;
+    
+    // First check if job has parameters
+    try {
+      const paramData = await jenkinsService.getJobParameters(selectedJob);
+      
+      if (paramData.hasParameters && paramData.parameters.length > 0) {
+        // Show parameters modal
+        setJobParameters(paramData.parameters);
+        setShowParametersModal(true);
+      } else {
+        // Trigger without parameters
+        await triggerBuildWithParameters(null);
+      }
+    } catch (err) {
+      setTriggerMessage('Failed to check job parameters');
+    }
+  };
+
+  const triggerBuildWithParameters = async (parameters) => {
     setTriggering(true);
     setTriggerMessage('');
 
     try {
-      await jenkinsService.triggerBuild(selectedJob);
+      await jenkinsService.triggerBuild(selectedJob, parameters);
       setTriggerMessage('Build queued successfully.');
+      setShowParametersModal(false);
       fetchBuildInfo();
     } catch (err) {
       if (err.response?.status === 401 || err.response?.status === 403) {
@@ -192,9 +215,9 @@ function Dashboard({ user, onLogout }) {
       <header className="dashboard-header">
         <div className="dashboard-header-content">
           <div className="brand">
-            <p className="brand-kicker">Jenkins Signal</p>
-            <h1>Portfolio Build Intelligence</h1>
-            <p className="brand-subtitle">Minimal, investor-ready visibility into delivery performance.</p>
+            <p className="brand-kicker">Jenkins Team</p>
+            <h1>Remote Jenkins</h1>
+            <p className="brand-subtitle">Remotely trigger your Jenkins pipelines</p>
           </div>
           <div className="user-info">
             <div className="user-chip">
@@ -212,7 +235,7 @@ function Dashboard({ user, onLogout }) {
         <section className="dashboard-grid">
           <div className="panel panel-primary">
             <div className="panel-header">
-              <h2>Pipeline Overview</h2>
+              <h2>Assigned Pipelines</h2>
               {lastUpdated && (
                 <span className="panel-meta">Updated {lastUpdated.toLocaleTimeString()}</span>
               )}
@@ -268,6 +291,15 @@ function Dashboard({ user, onLogout }) {
           </aside>
         </section>
       </div>
+
+      {showParametersModal && (
+        <ParametersModal
+          parameters={jobParameters}
+          onSubmit={triggerBuildWithParameters}
+          onClose={() => setShowParametersModal(false)}
+          triggering={triggering}
+        />
+      )}
     </div>
   );
 }

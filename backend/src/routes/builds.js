@@ -27,6 +27,26 @@ router.get(
   }
 );
 
+// Get a specific build by number
+router.get(
+  '/builds/:jobName/:buildNumber',
+  authenticateToken,
+  authorizePermissions(['build:read']),
+  async (req, res) => {
+    const { jobName, buildNumber } = req.params;
+
+    try {
+      const data = await jenkinsModel.getBuildByNumber(jobName, parseInt(buildNumber));
+      res.json(data);
+    } catch (error) {
+      res.status(404).json({
+        error: 'Failed to fetch build data',
+        message: error.message,
+      });
+    }
+  }
+);
+
 // Get all Jenkins jobs
 router.get(
   '/jobs',
@@ -55,6 +75,27 @@ router.get(
   }
 );
 
+// Get job parameters
+router.get(
+  '/jobs/:jobName/parameters',
+  authenticateToken,
+  authorizePermissions(['build:read']),
+  async (req, res) => {
+    const { jobName } = req.params;
+
+    try {
+      const data = await jenkinsModel.getJobParameters(jobName);
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Failed to fetch job parameters',
+        hasParameters: false,
+        parameters: [],
+      });
+    }
+  }
+);
+
 // Trigger a Jenkins build for a job
 router.post(
   '/builds/:jobName/trigger',
@@ -62,11 +103,18 @@ router.post(
   authorizePermissions(['build:trigger']),
   async (req, res) => {
     const { jobName } = req.params;
+    const { parameters } = req.body;
 
     console.log(`[BUILD TRIGGER] User: ${req.user.username}, Role: ${req.user.role}, Job: ${jobName}`);
 
     try {
-      const result = await jenkinsModel.triggerBuild(jobName);
+      let result;
+      if (parameters && Object.keys(parameters).length > 0) {
+        console.log(`[BUILD TRIGGER] With parameters:`, parameters);
+        result = await jenkinsModel.triggerBuildWithParameters(jobName, parameters);
+      } else {
+        result = await jenkinsModel.triggerBuild(jobName);
+      }
       console.log(`[BUILD TRIGGER] Success:`, result);
       res.json(result);
     } catch (error) {

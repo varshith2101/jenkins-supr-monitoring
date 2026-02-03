@@ -26,10 +26,30 @@ const jenkinsService = {
     return response.data;
   },
 
-  async triggerBuild(jobName) {
+  async getBuildByNumber(jobName, buildNumber) {
+    const response = await axios.get(
+      `${API_BASE_URL}/api/builds/${jobName}/${buildNumber}`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
+    return response.data;
+  },
+
+  async getJobParameters(jobName) {
+    const response = await axios.get(
+      `${API_BASE_URL}/api/jobs/${jobName}/parameters`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
+    return response.data;
+  },
+
+  async triggerBuild(jobName, parameters = null) {
     const response = await axios.post(
       `${API_BASE_URL}/api/builds/${jobName}/trigger`,
-      null,
+      parameters ? { parameters } : null,
       {
         headers: getAuthHeaders(),
       }

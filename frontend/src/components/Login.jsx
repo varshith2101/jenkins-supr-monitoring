@@ -36,34 +36,37 @@ function Login({ onLogin }) {
       <Navbar />
       <div className="login-screen">
         <div className="login-container">
-          <img src={logo} alt="Suprajit Logo" />
-          <h1>Jenkins Build Monitor</h1>
-          <p className="login-subtitle">Secure Access</p>
-          <form className="login-form" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <button type="submit" className="login-button" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-            <p className="login-hint">Default: admin / admin123 · viewer / viewer123</p>
-          </form>
-          {error && <div className="error-message">{error}</div>}
+          <div className="login-logo-section">
+            <img src={logo} alt="Suprajit Logo" />
+            <h1>Remote Jenkins</h1>
+            <p className="login-subtitle">Controlled Access</p>
+          </div>
+          <div className="login-form-section">
+            <form className="login-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <button type="submit" className="login-button" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
+              </button>
+            </form>
+            {error && <div className="error-message">{error}</div>}
+          </div>
         </div>
       </div>
     </div>

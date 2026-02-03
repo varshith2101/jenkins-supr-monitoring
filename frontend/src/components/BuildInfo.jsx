@@ -1,8 +1,15 @@
+import { useState } from 'react';
 import BuildCard from './BuildCard';
+import BuildModal from './BuildModal';
 import { formatStatus, formatDuration, getStatusClass } from '../utils/formatters';
+import { jenkinsService } from '../services/jenkinsService';
 
 function BuildInfo({ data }) {
-  const { builds, lastBuild } = data;
+  const { builds, lastBuild, jobName } = data;
+  const [searchBuildNumber, setSearchBuildNumber] = useState('');
+  const [selectedBuild, setSelectedBuild] = useState(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState('');
 
   if (!lastBuild) {
     return (
@@ -10,10 +17,27 @@ function BuildInfo({ data }) {
     );
   }
 
+  const handleSearchBuild = async (e) => {
+    e.preventDefault();
+    if (!searchBuildNumber || !jobName) return;
+
+    setSearchLoading(true);
+    setSearchError('');
+
+    try {
+      const build = await jenkinsService.getBuildByNumber(jobName, searchBuildNumber);
+      setSelectedBuild(build);
+      setSearchBuildNumber('');
+    } catch (err) {
+      setSearchError(`Build #${searchBuildNumber} not found`);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
   const previousBuilds = builds.slice(1);
 
   const statusClass = getStatusClass(lastBuild.status);
-  const stageClass = getStatusClass(lastBuild.stage4Status);
 
   return (
     <div className="build-info">
@@ -29,12 +53,12 @@ function BuildInfo({ data }) {
             {formatStatus(lastBuild.status)}
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">Stage 4 Status</div>
-          <div className={`status-pill ${stageClass}`}>
-            {formatStatus(lastBuild.stage4Status)}
+        {lastBuild.currentStage && lastBuild.status === 'IN_PROGRESS' && (
+          <div className="stat-card">
+            <div className="stat-label">Current Stage</div>
+            <div className="stat-value stage-indicator">{lastBuild.currentStage}</div>
           </div>
-        </div>
+        )}
         <div className="stat-card">
           <div className="stat-label">Duration</div>
           <div className="stat-value">{formatDuration(lastBuild.duration)}</div>
@@ -43,13 +67,41 @@ function BuildInfo({ data }) {
 
       {previousBuilds.length > 0 && (
         <>
-          <h2>Previous Builds</h2>
+          <h2>Previous Builds (Last 5)</h2>
           <div className="previous-builds">
             {previousBuilds.map((build) => (
               <BuildCard key={build.buildNumber} build={build} />
             ))}
           </div>
         </>
+      )}
+
+      <div className="build-search-section">
+        <h2>Search Build by Number</h2>
+        <form onSubmit={handleSearchBuild} className="build-search-form">
+          <input
+            type="number"
+            placeholder="Enter build number..."
+            value={searchBuildNumber}
+            onChange={(e) => setSearchBuildNumber(e.target.value)}
+            className="build-search-input"
+            min="1"
+          />
+          <button type="submit" className="primary-button" disabled={searchLoading}>
+            {searchLoading ? 'Loading...' : 'Load Build'}
+          </button>
+        </form>
+        {searchError && <div className="error-message">{searchError}</div>}
+      </div>
+
+      {selectedBuild && (
+        <BuildModal
+          build={selectedBuild}
+          onClose={() => {
+            setSelectedBuild(null);
+            setSearchError('');
+          }}
+        />
       )}
     </div>
   );

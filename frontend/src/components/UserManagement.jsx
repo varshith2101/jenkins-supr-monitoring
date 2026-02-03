@@ -158,10 +158,10 @@ function UserManagement({
                     ))}
                   </select>
                   <details>
-                    <summary className="ghost-button" style={{ marginBottom: '8px' }}>
+                    <summary className="ghost-button">
                       Pipelines
                     </summary>
-                    <div className="pipeline-list" style={{ marginTop: '8px' }}>
+                    <div className="pipeline-list">
                       {availableJobs && availableJobs.length > 0 ? (
                         availableJobs.map((job) => (
                           <label key={job} className="pipeline-checkbox">
