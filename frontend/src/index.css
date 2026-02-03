@@ -441,6 +441,12 @@ body::after {
   position: relative;
 }
 
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 
 /* Login Page */
 .login-page {
@@ -1073,6 +1079,10 @@ body::after {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
+}
+
+.dashboard-grid.dashboard-grid-single {
+  grid-template-columns: 1fr;
 }
 
 @media (max-width: 1024px) {
