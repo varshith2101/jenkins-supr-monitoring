@@ -16,4 +16,8 @@ export const config = {
   jenkinsToken: process.env.JENKINS_TOKEN || '',
   nodeEnv: process.env.NODE_ENV || 'development',
   databaseUrl: process.env.DATABASE_URL || '',
+  adminUsername: process.env.ADMIN_USERNAME || '',
+  adminPassword: process.env.ADMIN_PASSWORD || '',
+  viewerUsername: process.env.VIEWER_USERNAME || '',
+  viewerPassword: process.env.VIEWER_PASSWORD || '',
 };
