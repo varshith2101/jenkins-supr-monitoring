@@ -1,4 +1,5 @@
 import { formatStatus, formatDuration, formatTimestamp, getStatusClass } from '../utils/formatters';
+import easterEggImage from '../assets/asset.png';
 
 function BuildModal({ build, onClose }) {
   if (!build) return null;
@@ -21,7 +22,7 @@ function BuildModal({ build, onClose }) {
           {isEasterEgg ? (
             <div className="build-modal-easter-egg">
               <img
-                src="../assets/asset.webp"
+                src={easterEggImage}
                 alt="Easter egg"
                 className="build-modal-easter-egg-image"
               />
