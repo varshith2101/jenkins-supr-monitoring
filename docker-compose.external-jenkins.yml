@@ -47,6 +47,8 @@ services:
     # No external ports - only accessible internally
     expose:
       - "3000"
+    env_file:
+      - .env
     environment:
       - JENKINS_URL=${JENKINS_URL}
       - JENKINS_USER=${JENKINS_USER}
@@ -54,6 +56,9 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - NODE_ENV=${NODE_ENV}
       - DATABASE_URL=${DATABASE_URL}
+      - RATE_LIMIT_POINTS=${RATE_LIMIT_POINTS}
+      - RATE_LIMIT_DURATION=${RATE_LIMIT_DURATION}
+      - RATE_LIMIT_BLOCK_DURATION=${RATE_LIMIT_BLOCK_DURATION}
     networks:
       - devops_network
       - backend_network

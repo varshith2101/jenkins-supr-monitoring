@@ -18,23 +18,31 @@ router.get('/users', async (req, res) => {
 });
 
 router.post('/users', async (req, res) => {
-  const { username, password, role, displayName, manager, pipelines } = req.body;
+  const { username, password, role, displayName, lead, pipelines } = req.body;
 
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password required.' });
+  }
+
+  if (!lead || !lead.trim()) {
+    return res.status(400).json({ error: 'Lead cant be empty' });
   }
 
   if (role && !availableRoles.includes(role)) {
     return res.status(400).json({ error: 'Invalid role.' });
   }
 
+  if (role && !['user', 'viewer'].includes(role)) {
+    return res.status(400).json({ error: 'Only user and viewer roles can be created.' });
+  }
+
   try {
     const user = await UserDB.create({
       username,
       password,
-      role: role || 'viewer',
+      role: role || 'user',
       displayName,
-      manager,
+      lead,
       pipelines: Array.isArray(pipelines) ? pipelines : [],
     });
 
@@ -45,7 +53,7 @@ router.post('/users', async (req, res) => {
       username: req.user.username,
       action: 'create_user',
       resource: username,
-      details: { role: user.role, manager: user.manager },
+      details: { role: user.role, lead: user.lead },
       ipAddress: req.ip || req.connection.remoteAddress,
       userAgent: req.get('user-agent'),
       success: true,
@@ -59,10 +67,18 @@ router.post('/users', async (req, res) => {
 
 router.patch('/users/:username', async (req, res) => {
   const { username } = req.params;
-  const { password, role, displayName, manager, pipelines } = req.body;
+  const { password, role, displayName, lead, pipelines } = req.body;
 
   if (role && !availableRoles.includes(role)) {
     return res.status(400).json({ error: 'Invalid role.' });
+  }
+
+  if (role && !['user', 'viewer'].includes(role)) {
+    return res.status(400).json({ error: 'Only user and viewer roles are allowed.' });
+  }
+
+  if (lead !== undefined && !lead.trim()) {
+    return res.status(400).json({ error: 'Lead cant be empty' });
   }
 
   try {
@@ -70,7 +86,7 @@ router.patch('/users/:username', async (req, res) => {
       password,
       role,
       displayName,
-      manager,
+      lead,
       pipelines: Array.isArray(pipelines) ? pipelines : undefined,
     });
 
@@ -81,7 +97,7 @@ router.patch('/users/:username', async (req, res) => {
       username: req.user.username,
       action: 'update_user',
       resource: username,
-      details: { updates: { role, displayName, manager, pipelines: pipelines?.length } },
+      details: { updates: { role, displayName, lead, pipelines: pipelines?.length } },
       ipAddress: req.ip || req.connection.remoteAddress,
       userAgent: req.get('user-agent'),
       success: true,

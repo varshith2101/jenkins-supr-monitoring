@@ -8,6 +8,7 @@ const users = [
     password: 'admin123',
     role: 'admin',
     displayName: 'Administrator',
+    lead: 'System',
     pipelines: [], // Empty = access to all
   },
   {
@@ -16,6 +17,7 @@ const users = [
     password: 'viewer123',
     role: 'viewer',
     displayName: 'Investor View',
+    lead: 'System',
     pipelines: [],
   },
 ];
@@ -48,7 +50,7 @@ const UserModel = {
     return users.map((user) => sanitizeUser(user));
   },
 
-  createUser({ username, password, role = 'viewer', displayName, pipelines = [] }) {
+  createUser({ username, password, role = 'user', displayName, lead, pipelines = [] }) {
     const existing = this.findByUsername(username);
     if (existing) {
       throw new Error('User already exists');
@@ -60,6 +62,7 @@ const UserModel = {
       password,
       role,
       displayName: displayName || username,
+      lead: lead || '',
       pipelines: Array.isArray(pipelines) ? pipelines : [],
     };
     users.push(newUser);

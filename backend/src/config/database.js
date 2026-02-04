@@ -33,7 +33,7 @@ export async function initDatabase() {
         id SERIAL PRIMARY KEY,
         username VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
-        role VARCHAR(50) NOT NULL DEFAULT 'viewer',
+        role VARCHAR(50) NOT NULL DEFAULT 'user',
         display_name VARCHAR(255),
         manager VARCHAR(255),
         pipelines TEXT[] DEFAULT '{}',
@@ -46,6 +46,11 @@ export async function initDatabase() {
     await pool.query(`
       ALTER TABLE users
       ADD COLUMN IF NOT EXISTS manager VARCHAR(255)
+    `);
+
+    await pool.query(`
+      ALTER TABLE users
+      ALTER COLUMN role SET DEFAULT 'user'
     `);
 
     // Create audit_logs table

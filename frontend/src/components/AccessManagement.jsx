@@ -89,7 +89,7 @@ function AccessManagement({ user, onLogout, onBack }) {
               </div>
             </div>
           </div>
-          <p className="dashboard-subtitle">Access Management</p>
+          <p className="dashboard-subtitle">Suprajit Technology Center</p>
         </div>
       </header>
 
@@ -98,7 +98,6 @@ function AccessManagement({ user, onLogout, onBack }) {
           <div className="panel panel-primary">
             <div className="panel-header">
               <h2>Access & Governance</h2>
-              <span className="panel-meta">Admin only</span>
             </div>
             <UserManagement
               users={users}

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 const roles = [
-  { value: 'admin', label: 'Admin' },
   { value: 'user', label: 'User' },
   { value: 'viewer', label: 'Viewer' },
 ];
@@ -18,15 +17,26 @@ function UserManagement({
   const [form, setForm] = useState({
     username: '',
     password: '',
-    role: 'viewer',
+    role: 'user',
     displayName: '',
-    manager: '',
+    lead: '',
     pipelines: [],
   });
   const [submitting, setSubmitting] = useState(false);
   const [actionError, setActionError] = useState('');
   const [pipelineSearch, setPipelineSearch] = useState('');
   const [userSearch, setUserSearch] = useState('');
+
+  const resetForm = () => {
+    setForm({
+      username: '',
+      password: '',
+      role: 'user',
+      displayName: '',
+      lead: '',
+      pipelines: [],
+    });
+  };
 
   const handleChange = (field) => (event) => {
     setForm((prev) => ({ ...prev, [field]: event.target.value }));
@@ -36,16 +46,15 @@ function UserManagement({
     event.preventDefault();
     setSubmitting(true);
     setActionError('');
+    if (!form.lead || form.lead.trim().length === 0) {
+      setActionError('Lead cant be empty');
+      setSubmitting(false);
+      return;
+    }
+
     try {
-      await onCreate(form);
-      setForm({
-        username: '',
-        password: '',
-        role: 'viewer',
-        displayName: '',
-        manager: '',
-        pipelines: [],
-      });
+      await onCreate({ ...form });
+      resetForm();
     } catch (err) {
       setActionError(err?.response?.data?.error || 'Failed to create user');
     } finally {
@@ -58,11 +67,11 @@ function UserManagement({
   );
 
   const filteredUsers = users
-    .filter((u) => u.role !== 'admin')
-    .filter((u) => {
+    .filter((user) => user.role !== 'admin')
+    .filter((user) => {
       const query = userSearch.trim().toLowerCase();
       if (!query) return true;
-      return [u.username, u.displayName, u.manager]
+      return [user.username, user.displayName, user.lead]
         .filter(Boolean)
         .some((value) => value.toLowerCase().includes(query));
     });
@@ -94,7 +103,7 @@ function UserManagement({
         <div className="form-row">
           <input
             type="password"
-            placeholder="Temporary password"
+            placeholder="Password"
             value={form.password}
             onChange={handleChange('password')}
             required
@@ -110,9 +119,10 @@ function UserManagement({
         <div className="form-row">
           <input
             type="text"
-            placeholder="Manager"
-            value={form.manager}
-            onChange={handleChange('manager')}
+            placeholder="Lead"
+            value={form.lead}
+            onChange={handleChange('lead')}
+            required
           />
         </div>
         <div className="pipeline-selector">
@@ -188,7 +198,7 @@ function UserManagement({
                 <div className="user-info-col">
                   <p className="user-name">{user.displayName || user.username}</p>
                   <p className="user-handle">@{user.username}</p>
-                  <p className="user-meta">Manager: {user.manager || 'N/A'}</p>
+                  <p className="user-meta">Lead: {user.lead || ''}</p>
                 </div>
                 <div className="user-actions">
                   <select
@@ -228,9 +238,7 @@ function UserManagement({
                           <label key={job} className="pipeline-checkbox pipeline-checkbox--fancy">
                             <input
                               type="checkbox"
-                              checked={
-                                user.pipelines && user.pipelines.includes(job)
-                              }
+                              checked={user.pipelines && user.pipelines.includes(job)}
                               onChange={async (e) => {
                                 setActionError('');
                                 try {
@@ -242,8 +250,7 @@ function UserManagement({
                                   });
                                 } catch (err) {
                                   setActionError(
-                                    err?.response?.data?.error ||
-                                      'Failed to update pipelines'
+                                    err?.response?.data?.error || 'Failed to update pipelines'
                                   );
                                 }
                               }}

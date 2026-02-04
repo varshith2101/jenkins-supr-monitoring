@@ -33,7 +33,7 @@ function PipelineCard({ jobName, lastBuild, hasError, onReadMore }) {
       </div>
       <div className="pipeline-card-action">
         <button className="secondary-button" type="button" onClick={onReadMore}>
-          Read more
+          View Pipeline
         </button>
       </div>
     </div>

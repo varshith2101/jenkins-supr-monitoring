@@ -1,12 +1,22 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load .env from project root (2 levels up from config directory)
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+// Load .env from repo root and/or current working directory
+const repoRootEnv = path.resolve(__dirname, '../../../.env');
+const cwdEnv = path.resolve(process.cwd(), '.env');
+
+if (fs.existsSync(repoRootEnv)) {
+  dotenv.config({ path: repoRootEnv });
+}
+
+if (cwdEnv !== repoRootEnv && fs.existsSync(cwdEnv)) {
+  dotenv.config({ path: cwdEnv });
+}
 
 export const config = {
   port: process.env.PORT || 3000,

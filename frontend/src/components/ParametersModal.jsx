@@ -79,9 +79,6 @@ function ParametersModal({ parameters, onSubmit, onClose, triggering }) {
           </div>
           
           <div className="modal-footer">
-            <button type="button" className="secondary-button" onClick={onClose} disabled={triggering}>
-              Cancel
-            </button>
             <button type="submit" className="primary-button" disabled={triggering}>
               {triggering ? 'Triggering...' : 'Trigger Build'}
             </button>

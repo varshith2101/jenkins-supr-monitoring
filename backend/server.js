@@ -11,6 +11,7 @@ const app = express();
 const PORT = config.port;
 
 // Middleware
+app.set('trust proxy', true);
 app.use(cors());
 app.use(express.json());
 app.use('/api', rateLimiterMiddleware);

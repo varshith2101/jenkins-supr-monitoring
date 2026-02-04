@@ -74,7 +74,7 @@ const UserDB = {
         username: user.username,
         role: user.role,
         displayName: user.display_name,
-        manager: user.manager,
+        lead: user.manager,
         pipelines: user.pipelines || [],
         createdAt: user.created_at,
         updatedAt: user.updated_at,
@@ -88,7 +88,7 @@ const UserDB = {
   /**
    * Create new user
    */
-  async create({ username, password, role = 'viewer', displayName, manager, pipelines = [] }) {
+  async create({ username, password, role = 'user', displayName, lead, pipelines = [] }) {
     try {
       // Check if user already exists
       const existing = await this.findByUsername(username);
@@ -102,7 +102,7 @@ const UserDB = {
       // Insert user
       const result = await pool.query(
         'INSERT INTO users (username, password, role, display_name, manager, pipelines) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, role, display_name, manager, pipelines, created_at, updated_at',
-        [username, hashedPassword, role, displayName || username, manager || null, pipelines]
+        [username, hashedPassword, role, displayName || username, lead || null, pipelines]
       );
 
       const user = result.rows[0];
@@ -111,7 +111,7 @@ const UserDB = {
         username: user.username,
         role: user.role,
         displayName: user.display_name,
-        manager: user.manager,
+        lead: user.manager,
         pipelines: user.pipelines || [],
         createdAt: user.created_at,
         updatedAt: user.updated_at,
@@ -152,9 +152,9 @@ const UserDB = {
         values.push(updates.displayName);
       }
 
-      if (updates.manager !== undefined) {
+      if (updates.lead !== undefined) {
         updateFields.push(`manager = $${paramCount++}`);
-        values.push(updates.manager || null);
+        values.push(updates.lead || null);
       }
 
       if (updates.pipelines !== undefined) {
@@ -186,7 +186,7 @@ const UserDB = {
         username: updatedUser.username,
         role: updatedUser.role,
         displayName: updatedUser.display_name,
-        manager: updatedUser.manager,
+        lead: updatedUser.manager,
         pipelines: updatedUser.pipelines || [],
         createdAt: updatedUser.created_at,
         updatedAt: updatedUser.updated_at,

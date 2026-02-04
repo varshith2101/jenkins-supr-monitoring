@@ -8,11 +8,16 @@ const rateLimiter = new RateLimiterMemory({
 });
 
 export const rateLimiterMiddleware = async (req, res, next) => {
+  const authHeader = req.headers.authorization || '';
+  const tokenMatch = authHeader.match(/^Bearer\s+(.*)$/i);
+  const token = tokenMatch?.[1];
+
   const forwardedFor = req.headers['x-forwarded-for'];
   const forwardedIp = Array.isArray(forwardedFor)
     ? forwardedFor[0]
     : forwardedFor?.split(',')[0]?.trim();
-  const key = forwardedIp || req.ip || req.connection?.remoteAddress || 'unknown';
+  const rawKey = token || forwardedIp || req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress;
+  const key = rawKey ? rawKey.replace('::ffff:', '') : 'unknown';
 
   try {
     await rateLimiter.consume(key, 1);
