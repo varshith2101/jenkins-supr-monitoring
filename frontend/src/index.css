@@ -1611,6 +1611,13 @@ body::after {
   border-color: var(--border-subtle);
 }
 
+.status-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 /* Build Info */
 .build-info h2 {
   font-size: 1rem;
@@ -1644,6 +1651,10 @@ body::after {
   gap: 1rem;
   box-shadow: var(--shadow-sm);
   color: var(--text-primary);
+}
+
+.build-card[role='button'] {
+  cursor: pointer;
 }
 
 .build-card:hover {
@@ -1682,6 +1693,56 @@ body::after {
   color: var(--text-primary);
   font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
   font-weight: 500;
+}
+
+.view-logs-button {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(0, 0, 0, 0.4);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.failed-stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--primary-light);
+  background: rgba(0, 82, 204, 0.18);
+  color: var(--primary-bright);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 12px rgba(0, 82, 204, 0.25);
+  box-shadow: 0 0 16px rgba(0, 82, 204, 0.2);
+}
+
+.build-detail .view-logs-button {
+  margin-top: 0.65rem;
+  width: max-content;
+}
+
+.stat-card .failed-stage-badge {
+  margin-top: 0.35rem;
+  width: fit-content;
+}
+
+.view-logs-button:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 12px var(--primary-glow);
+  transform: translateY(-1px);
 }
 
 /* Loading */
@@ -2277,6 +2338,61 @@ body::after {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+/* Build Logs Modal Specific */
+.modal-overlay-logs {
+  z-index: 1100;
+}
+
+.logs-modal {
+  max-width: 800px;
+}
+
+.logs-command-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1.5rem;
+}
+
+.logs-command-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.logs-command-value {
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 0.9rem;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+}
+
+.logs-output {
+  background: #050505;
+  color: #e2e8f0;
+  border: 1px solid #1f1f1f;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  max-height: 50vh;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.logs-loading {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
 }
 
 .stage-indicator {

@@ -1,19 +1,22 @@
 import { formatStatus, formatDuration, formatTimestamp, getStatusClass } from '../utils/formatters';
 import easterEggImage from '../assets/asset.png';
 
-function BuildModal({ build, onClose }) {
+function BuildModal({ build, onClose, onViewLogs, canViewLogs }) {
   if (!build) return null;
 
   const isEasterEgg = Number(build.buildNumber) === 696969;
 
   const statusClass = getStatusClass(build.status);
+  const statusValue = String(build.status || '').toLowerCase();
+  const isFailedStage = ['failure', 'failed', 'aborted'].includes(statusValue);
+  const failedStageLabel = build.failedStage || 'Unknown Stage';
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>
-            {isEasterEgg ? 'Nice.' : `Build #${build.buildNumber} Details`}
+            {isEasterEgg ? 'KAAM DEKH SAALE' : `Build #${build.buildNumber} Details`}
           </h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
@@ -49,8 +52,12 @@ function BuildModal({ build, onClose }) {
               )}
 
               <div className="build-modal-stat">
-                <div className="build-modal-label">Duration</div>
-                <div className="build-modal-value">{formatDuration(build.duration)}</div>
+                <div className="build-modal-label">
+                  {isFailedStage ? 'Failed Stage' : 'Duration'}
+                </div>
+                <div className={`build-modal-value${isFailedStage ? ' failed-stage-badge' : ''}`}>
+                  {isFailedStage ? failedStageLabel : formatDuration(build.duration)}
+                </div>
               </div>
 
               <div className="build-modal-stat">
@@ -62,6 +69,11 @@ function BuildModal({ build, onClose }) {
         </div>
         
         <div className="modal-footer">
+          {canViewLogs && (
+            <button className="primary-button" onClick={onViewLogs}>
+              View Logs
+            </button>
+          )}
           <button className="secondary-button" onClick={onClose}>Close</button>
         </div>
       </div>

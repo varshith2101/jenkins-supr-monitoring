@@ -1,10 +1,25 @@
 import { formatStatus, formatDuration, formatTimestamp, getStatusClass } from '../utils/formatters';
 
-function BuildCard({ build }) {
+function BuildCard({ build, canViewLogs, onViewLogs, onSelectBuild }) {
   const statusClass = getStatusClass(build.status);
+  const statusValue = String(build.status || '').toLowerCase();
+  const isFailedStage = ['failure', 'failed', 'aborted'].includes(statusValue);
+  const failedStageLabel = build.failedStage || 'Unknown Stage';
 
   return (
-    <div className={`build-card ${statusClass}`}>
+    <div
+      className={`build-card ${statusClass}`}
+      onClick={onSelectBuild}
+      role={onSelectBuild ? 'button' : undefined}
+      tabIndex={onSelectBuild ? 0 : undefined}
+      onKeyDown={(event) => {
+        if (!onSelectBuild) return;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onSelectBuild();
+        }
+      }}
+    >
       <div className="build-detail">
         <div className="build-detail-label">Build Number</div>
         <div className="build-detail-value">#{build.buildNumber}</div>
@@ -22,8 +37,24 @@ function BuildCard({ build }) {
         </div>
       )}
       <div className="build-detail">
-        <div className="build-detail-label">Duration</div>
-        <div className="build-detail-value">{formatDuration(build.duration)}</div>
+        <div className="build-detail-label">
+          {isFailedStage ? 'Failed Stage' : 'Duration'}
+        </div>
+        <div className={`build-detail-value${isFailedStage ? ' failed-stage-badge' : ''}`}>
+          {isFailedStage ? failedStageLabel : formatDuration(build.duration)}
+        </div>
+        {canViewLogs && (
+          <button
+            type="button"
+            className="view-logs-button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onViewLogs?.();
+            }}
+          >
+            View Logs
+          </button>
+        )}
       </div>
       <div className="build-detail">
         <div className="build-detail-label">Timestamp</div>

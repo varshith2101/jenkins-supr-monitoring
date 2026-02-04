@@ -1,68 +1,104 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL=${BASE_URL:-"http://localhost:5111"}
-ENDPOINT=${ENDPOINT:-"/api/jobs"}
-TOTAL_REQUESTS=${TOTAL_REQUESTS:-200}
+# -------------------------------------------------
+# Configuration (defaults)
+# -------------------------------------------------
+BASE_URL="${BASE_URL:-http://localhost:5111}"
+ENDPOINT="${ENDPOINT:-/api/jobs}"
+TOTAL_REQUESTS="${TOTAL_REQUESTS:-200}"
 
-declare -a IP_POOL=(
-  "10.0.0.10"
-  "10.0.0.11"
-  "10.0.0.12"
-  "10.0.0.13"
-  "10.0.0.14"
-  "10.0.0.15"
-  "10.0.0.16"
-  "10.0.0.17"
+IP_POOL=(
+  10.0.0.10
+  10.0.0.11
+  10.0.0.12
+  10.0.0.13
+  10.0.0.14
+  10.0.0.15
+  10.0.0.16
+  10.0.0.17
 )
 
+log() {
+  printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"
+}
+
+err() {
+  printf '[ERROR] %s\n' "$*" >&2
+}
+
+# -------------------------------------------------
+# Load .env if present
+# -------------------------------------------------
 if [ -f ".env" ]; then
+  log "Loading environment from .env"
   set -a
   # shellcheck disable=SC1091
   . ./.env
   set +a
 fi
 
-if [ -z "${ADMIN_USERNAME:-}" ] || [ -z "${ADMIN_PASSWORD:-}" ]; then
-  echo "[ERROR] ADMIN_USERNAME or ADMIN_PASSWORD not set in .env"
-  exit 1
-fi
+# -------------------------------------------------
+# Validate credentials
+# -------------------------------------------------
+: "${ADMIN_USERNAME:?ADMIN_USERNAME not set}"
+: "${ADMIN_PASSWORD:?ADMIN_PASSWORD not set}"
 
-login_payload=$(printf '{"username":"%s","password":"%s"}' "$ADMIN_USERNAME" "$ADMIN_PASSWORD")
+# -------------------------------------------------
+# Authenticate
+# -------------------------------------------------
+log "Authenticating to $BASE_URL"
 
-token=$(curl -s "$BASE_URL/api/login" \
-  -H "Content-Type: application/json" \
-  -d "$login_payload" | \
-  sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+login_payload=$(printf \
+  '{"username":"%s","password":"%s"}' \
+  "$ADMIN_USERNAME" "$ADMIN_PASSWORD"
+)
+
+token="$(
+  curl -fsS "$BASE_URL/api/login" \
+    -H "Content-Type: application/json" \
+    -d "$login_payload" \
+  | sed -n 's/.*"token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p'
+)"
 
 if [ -z "$token" ]; then
-  echo "[ERROR] Failed to obtain auth token. Check credentials or BASE_URL."
+  err "Failed to obtain auth token (check credentials or BASE_URL)"
   exit 1
 fi
 
-echo "[INFO] Testing rate limiter against $BASE_URL$ENDPOINT"
+log "Authentication successful"
 
-echo "[INFO] Sending $TOTAL_REQUESTS requests across ${#IP_POOL[@]} simulated IPs..."
+# -------------------------------------------------
+# Rate limiter test
+# -------------------------------------------------
+log "Testing rate limiter: $BASE_URL$ENDPOINT"
+log "Total requests: $TOTAL_REQUESTS"
+log "Simulated IPs: ${#IP_POOL[@]}"
 
 accepted=0
 rejected=0
 
 for ((i=1; i<=TOTAL_REQUESTS; i++)); do
-  ip=${IP_POOL[$(( (i-1) % ${#IP_POOL[@]} ))]}
-  status=$(curl -s -o /dev/null -w "%{http_code}" \
-    -H "Authorization: Bearer $token" \
-    -H "X-Forwarded-For: $ip" \
-    "$BASE_URL$ENDPOINT")
+  ip="${IP_POOL[$(( (i - 1) % ${#IP_POOL[@]} ))]}"
+
+  status="$(
+    curl -s -o /dev/null -w "%{http_code}" \
+      -H "Authorization: Bearer $token" \
+      -H "X-Forwarded-For: $ip" \
+      "$BASE_URL$ENDPOINT" || echo "000"
+  )"
 
   if [ "$status" = "429" ]; then
-    echo "[$i] $ip -> REJECTED (429)"
+    printf '[%03d] %-12s -> REJECTED (429)\n' "$i" "$ip"
     ((rejected++))
   else
-    echo "[$i] $ip -> ACCEPTED ($status)"
+    printf '[%03d] %-12s -> ACCEPTED (%s)\n' "$i" "$ip" "$status"
     ((accepted++))
   fi
-
 done
 
-echo ""
-echo "[RESULTS] Accepted: $accepted | Rejected: $rejected"
+# -------------------------------------------------
+# Results
+# -------------------------------------------------
+echo
+log "RESULTS → Accepted: $accepted | Rejected: $rejected"

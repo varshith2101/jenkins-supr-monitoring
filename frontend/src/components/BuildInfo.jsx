@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import BuildCard from './BuildCard';
 import BuildModal from './BuildModal';
+import BuildLogsModal from './BuildLogsModal';
 import { formatStatus, formatDuration, getStatusClass } from '../utils/formatters';
 import { jenkinsService } from '../services/jenkinsService';
 
@@ -10,6 +11,11 @@ function BuildInfo({ data }) {
   const [selectedBuild, setSelectedBuild] = useState(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
+  const [logsBuild, setLogsBuild] = useState(null);
+  const [logsContent, setLogsContent] = useState('');
+  const [logsCommand, setLogsCommand] = useState('');
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logsError, setLogsError] = useState('');
 
   if (!lastBuild) {
     return (
@@ -51,6 +57,46 @@ function BuildInfo({ data }) {
 
   const statusClass = getStatusClass(lastBuild.status);
 
+  const isFailedStatus = (status) => {
+    if (!status) return false;
+    const normalized = status.toLowerCase();
+    return ['failure', 'failed', 'aborted'].includes(normalized);
+  };
+
+  const canViewLogs = (status) => {
+    if (!status) return false;
+    const normalized = status.toLowerCase();
+    return normalized !== 'success' && normalized !== 'in_progress' && normalized !== 'in progress';
+  };
+
+  const getDurationOrStage = (build) => {
+    if (!build) return 'N/A';
+    if (isFailedStatus(build.status)) {
+      return build.failedStage || 'Unknown Stage';
+    }
+    return formatDuration(build.duration);
+  };
+
+  const handleViewLogs = async (build) => {
+    if (!jobName || !build?.buildNumber) return;
+
+    setLogsBuild(build);
+    setLogsLoading(true);
+    setLogsError('');
+    setLogsContent('');
+    setLogsCommand('');
+
+    try {
+      const data = await jenkinsService.getBuildLogs(jobName, build.buildNumber);
+      setLogsContent(data.logs || '');
+      setLogsCommand(data.command || 'Pipeline');
+    } catch (err) {
+      setLogsError('Unable to load logs for this build.');
+    } finally {
+      setLogsLoading(false);
+    }
+  };
+
   return (
     <div className="build-info">
       <h2>Current Build Status</h2>
@@ -61,8 +107,19 @@ function BuildInfo({ data }) {
         </div>
         <div className="stat-card">
           <div className="stat-label">Status</div>
-          <div className={`status-pill ${statusClass}`}>
-            {formatStatus(lastBuild.status)}
+          <div className="status-actions">
+            <div className={`status-pill ${statusClass}`}>
+              {formatStatus(lastBuild.status)}
+            </div>
+            {canViewLogs(lastBuild.status) && (
+              <button
+                type="button"
+                className="view-logs-button"
+                onClick={() => handleViewLogs(lastBuild)}
+              >
+                View Logs
+              </button>
+            )}
           </div>
         </div>
         {lastBuild.currentStage && lastBuild.status === 'IN_PROGRESS' && (
@@ -72,8 +129,12 @@ function BuildInfo({ data }) {
           </div>
         )}
         <div className="stat-card">
-          <div className="stat-label">Duration</div>
-          <div className="stat-value">{formatDuration(lastBuild.duration)}</div>
+          <div className="stat-label">
+            {isFailedStatus(lastBuild.status) ? 'Failed Stage' : 'Duration'}
+          </div>
+          <div className={`stat-value${isFailedStatus(lastBuild.status) ? ' failed-stage-badge' : ''}`}>
+            {getDurationOrStage(lastBuild)}
+          </div>
         </div>
       </div>
 
@@ -82,7 +143,13 @@ function BuildInfo({ data }) {
           <h2>Previous Builds</h2>
           <div className="previous-builds">
             {previousBuilds.map((build) => (
-              <BuildCard key={build.buildNumber} build={build} />
+              <BuildCard
+                key={build.buildNumber}
+                build={build}
+                canViewLogs={canViewLogs(build.status)}
+                onViewLogs={() => handleViewLogs(build)}
+                onSelectBuild={() => setSelectedBuild(build)}
+              />
             ))}
           </div>
         </>
@@ -109,9 +176,27 @@ function BuildInfo({ data }) {
       {selectedBuild && (
         <BuildModal
           build={selectedBuild}
+          canViewLogs={canViewLogs(selectedBuild.status)}
+          onViewLogs={() => handleViewLogs(selectedBuild)}
           onClose={() => {
             setSelectedBuild(null);
             setSearchError('');
+          }}
+        />
+      )}
+
+      {logsBuild && (
+        <BuildLogsModal
+          build={logsBuild}
+          logs={logsContent}
+          command={logsCommand}
+          loading={logsLoading}
+          error={logsError}
+          onClose={() => {
+            setLogsBuild(null);
+            setLogsError('');
+            setLogsContent('');
+            setLogsCommand('');
           }}
         />
       )}

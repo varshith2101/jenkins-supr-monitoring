@@ -16,9 +16,9 @@ if [ "$confirm" != "YES" ]; then
 fi
 
 echo "[INFO] Stopping containers and removing volumes..."
-docker-compose -f "$COMPOSE_FILE" down -v
+docker compose -f "$COMPOSE_FILE" down -v
 
 echo "[INFO] Rebuilding and starting containers..."
-docker-compose -f "$COMPOSE_FILE" up --build -d
+docker compose -f "$COMPOSE_FILE" up --build -d
 
 echo "[SUCCESS] Full rebuild complete (database reset)."

@@ -48,6 +48,26 @@ router.get(
   }
 );
 
+// Get build logs for a specific build
+router.get(
+  '/builds/:jobName/:buildNumber/logs',
+  authenticateToken,
+  authorizePermissions(['build:read']),
+  async (req, res) => {
+    const { jobName, buildNumber } = req.params;
+
+    try {
+      const data = await jenkinsModel.getBuildLogs(jobName, parseInt(buildNumber));
+      res.json(data);
+    } catch (error) {
+      res.status(404).json({
+        error: 'Failed to fetch build logs',
+        message: error.message,
+      });
+    }
+  }
+);
+
 // Get all Jenkins jobs
 router.get(
   '/jobs',
