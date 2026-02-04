@@ -2237,6 +2237,20 @@ body::after {
   gap: 1rem;
 }
 
+.build-modal-easter-egg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 0.5rem;
+}
+
+.build-modal-easter-egg-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-lg);
+}
+
 .build-modal-stat {
   background: rgba(30, 30, 30, 0.4);
   padding: 1rem;
