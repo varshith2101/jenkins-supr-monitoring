@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import Navbar from './Navbar';
 import UserManagement from './UserManagement';
 import { jenkinsService } from '../services/jenkinsService';
 import { userService } from '../services/userService';
+import logo from '../main-logo-2.png';
 
 function AccessManagement({ user, onLogout, onBack }) {
   const [users, setUsers] = useState([]);
@@ -66,23 +66,30 @@ function AccessManagement({ user, onLogout, onBack }) {
 
   return (
     <div className="dashboard-screen">
-      <Navbar actionLabel="Back to Dashboard" onAction={onBack} />
       <header className="dashboard-header">
         <div className="dashboard-header-content">
-          <div className="brand">
-            <p className="brand-kicker">Jenkins Team</p>
-            <h1>Access Management</h1>
-            <p className="brand-subtitle">Manage roles, users, and pipeline access</p>
-          </div>
-          <div className="user-info">
-            <div className="user-chip">
-              <div className="user-name">{user?.displayName || user?.username}</div>
-              <div className="user-role">{user?.role?.toUpperCase()}</div>
+          <div className="dashboard-header-row">
+            <div className="brand">
+              <img className="brand-logo" src={logo} alt="Suprajit Logo" />
             </div>
-            <button className="logout-button" onClick={onLogout}>
-              Logout
-            </button>
+            <div className="user-info">
+              <button className="secondary-button access-button" type="button" onClick={onBack}>
+                Back to Dashboard
+              </button>
+              <div className="profile-menu">
+                <button className="user-chip user-chip-button" type="button">
+                  <div className="user-name">{user?.displayName || user?.username}</div>
+                  <div className="user-role">{user?.role?.toUpperCase()}</div>
+                </button>
+                <div className="profile-dropdown">
+                  <button className="logout-button" onClick={onLogout} type="button">
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
+          <p className="dashboard-subtitle">Access Management</p>
         </div>
       </header>
 

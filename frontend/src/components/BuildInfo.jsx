@@ -67,7 +67,7 @@ function BuildInfo({ data }) {
 
       {previousBuilds.length > 0 && (
         <>
-          <h2>Previous Builds (Last 5)</h2>
+          <h2>Previous Builds</h2>
           <div className="previous-builds">
             {previousBuilds.map((build) => (
               <BuildCard key={build.buildNumber} build={build} />

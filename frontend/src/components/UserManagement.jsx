@@ -26,6 +26,7 @@ function UserManagement({
   const [submitting, setSubmitting] = useState(false);
   const [actionError, setActionError] = useState('');
   const [pipelineSearch, setPipelineSearch] = useState('');
+  const [userSearch, setUserSearch] = useState('');
 
   const handleChange = (field) => (event) => {
     setForm((prev) => ({ ...prev, [field]: event.target.value }));
@@ -55,6 +56,16 @@ function UserManagement({
   const filteredJobs = availableJobs?.filter((job) =>
     job.toLowerCase().includes(pipelineSearch.trim().toLowerCase())
   );
+
+  const filteredUsers = users
+    .filter((u) => u.role !== 'admin')
+    .filter((u) => {
+      const query = userSearch.trim().toLowerCase();
+      if (!query) return true;
+      return [u.username, u.displayName, u.manager]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(query));
+    });
 
   return (
     <div className="user-management">
@@ -156,6 +167,15 @@ function UserManagement({
             <h3>Active users</h3>
             <p className="muted-text">Manage roles, pipelines, and ownership.</p>
           </div>
+          <div className="panel-search">
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={userSearch}
+              onChange={(event) => setUserSearch(event.target.value)}
+              className="panel-search-input"
+            />
+          </div>
         </div>
         {loading ? (
           <div className="muted-card">Loading users...</div>
@@ -163,9 +183,7 @@ function UserManagement({
           <div className="error-message">{error}</div>
         ) : (
           <div className="user-table">
-            {users
-              .filter((u) => u.role !== 'admin')
-              .map((user) => (
+            {filteredUsers.map((user) => (
               <div key={user.username} className="user-row">
                 <div className="user-info-col">
                   <p className="user-name">{user.displayName || user.username}</p>

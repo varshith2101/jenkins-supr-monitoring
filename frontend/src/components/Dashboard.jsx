@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import Navbar from './Navbar';
 import BuildInfo from './BuildInfo';
 import PipelineCard from './PipelineCard';
 import ParametersModal from './ParametersModal';
 import { jenkinsService } from '../services/jenkinsService';
+import { formatTimestamp } from '../utils/formatters';
+import logo from '../main-logo-2.png';
 
 function Dashboard({ user, onLogout, onAccessManagement }) {
   const [selectedJob, setSelectedJob] = useState('');
@@ -22,6 +23,7 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
   const [pipelineSummaries, setPipelineSummaries] = useState([]);
   const [summariesLoading, setSummariesLoading] = useState(false);
   const [viewMode, setViewMode] = useState('list');
+  const [pipelineSearch, setPipelineSearch] = useState('');
 
   const canTrigger = ['admin', 'user'].includes(user?.role);
 
@@ -191,32 +193,42 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
     setTriggerMessage('');
   };
 
+  const filteredPipelineSummaries = pipelineSummaries.filter((pipeline) =>
+    pipeline.name.toLowerCase().includes(pipelineSearch.trim().toLowerCase())
+  );
+
   const handleRefresh = () => {
     fetchBuildInfo();
   };
 
   return (
     <div className="dashboard-screen">
-      <Navbar
-        actionLabel={user?.role === 'admin' ? 'Access Management' : null}
-        onAction={user?.role === 'admin' ? onAccessManagement : null}
-      />
       <header className="dashboard-header">
         <div className="dashboard-header-content">
-          <div className="brand">
-            <p className="brand-kicker">Jenkins Team</p>
-            <h1>Remote Jenkins</h1>
-            <p className="brand-subtitle">Remotely trigger your Jenkins pipelines</p>
-          </div>
-          <div className="user-info">
-            <div className="user-chip">
-              <div className="user-name">{user?.displayName || user?.username}</div>
-              <div className="user-role">{user?.role?.toUpperCase()}</div>
+          <div className="dashboard-header-row">
+            <div className="brand">
+              <img className="brand-logo" src={logo} alt="Suprajit Logo" />
             </div>
-            <button className="logout-button" onClick={onLogout}>
-              Logout
-            </button>
+            <div className="user-info">
+              {user?.role === 'admin' && (
+                <button className="secondary-button access-button" type="button" onClick={onAccessManagement}>
+                  Access Management
+                </button>
+              )}
+              <div className="profile-menu">
+                <button className="user-chip user-chip-button" type="button">
+                  <div className="user-name">{user?.displayName || user?.username}</div>
+                  <div className="user-role">{user?.role?.toUpperCase()}</div>
+                </button>
+                <div className="profile-dropdown">
+                  <button className="logout-button" onClick={onLogout} type="button">
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
+          <p className="dashboard-subtitle">Suprajit Technology Center</p>
         </div>
       </header>
 
@@ -226,9 +238,18 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
             {viewMode === 'list' ? (
               <>
                 <div className="panel-header">
-                  <h2>Assigned Pipelines</h2>
+                  <h2>Pipeline Overview</h2>
+                  <div className="panel-search">
+                    <input
+                      type="text"
+                      placeholder="Search pipelines..."
+                      value={pipelineSearch}
+                      onChange={(event) => setPipelineSearch(event.target.value)}
+                      className="panel-search-input"
+                    />
+                  </div>
                   {lastUpdated && (
-                    <span className="panel-meta">Updated {lastUpdated.toLocaleTimeString()}</span>
+                    <span className="panel-meta">Updated {formatTimestamp(lastUpdated)}</span>
                   )}
                 </div>
 
@@ -239,11 +260,11 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
                     <div className="spinner"></div>
                     <p>Loading pipelines...</p>
                   </div>
-                ) : pipelineSummaries.length === 0 ? (
+                ) : filteredPipelineSummaries.length === 0 ? (
                   <div className="muted-card">No pipelines available.</div>
                 ) : (
                   <div className="pipeline-card-list">
-                    {pipelineSummaries.map((pipeline) => (
+                    {filteredPipelineSummaries.map((pipeline) => (
                       <PipelineCard
                         key={pipeline.name}
                         jobName={pipeline.name}

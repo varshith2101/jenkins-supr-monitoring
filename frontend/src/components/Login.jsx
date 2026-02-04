@@ -36,7 +36,7 @@ function Login({ onLogin }) {
         <div className="login-logo-section">
           <div className="login-logo-content">
             <img src={logo} alt="Suprajit Logo" />
-            <h1>Remote Jenkins</h1>
+            <h1>Jenkins</h1>
             <p className="login-subtitle">Controlled Access</p>
           </div>
         </div>
