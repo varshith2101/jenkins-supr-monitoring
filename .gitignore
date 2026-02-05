@@ -31,4 +31,5 @@ Thumbs.db
 # Docker
 .docker/
 
+test.txt
 
