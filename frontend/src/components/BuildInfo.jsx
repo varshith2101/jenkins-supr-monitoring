@@ -1,21 +1,15 @@
 import { useState } from 'react';
 import BuildCard from './BuildCard';
 import BuildModal from './BuildModal';
-import BuildLogsModal from './BuildLogsModal';
 import { formatStatus, formatDuration, getStatusClass } from '../utils/formatters';
 import { jenkinsService } from '../services/jenkinsService';
 
-function BuildInfo({ data }) {
+function BuildInfo({ data, onViewStages }) {
   const { builds, lastBuild, jobName } = data;
   const [searchBuildNumber, setSearchBuildNumber] = useState('');
   const [selectedBuild, setSelectedBuild] = useState(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
-  const [logsBuild, setLogsBuild] = useState(null);
-  const [logsContent, setLogsContent] = useState('');
-  const [logsCommand, setLogsCommand] = useState('');
-  const [logsLoading, setLogsLoading] = useState(false);
-  const [logsError, setLogsError] = useState('');
 
   if (!lastBuild) {
     return (
@@ -66,7 +60,7 @@ function BuildInfo({ data }) {
   const canViewLogs = (status) => {
     if (!status) return false;
     const normalized = status.toLowerCase();
-    return normalized !== 'success' && normalized !== 'in_progress' && normalized !== 'in progress';
+    return normalized !== 'success';
   };
 
   const getDurationOrStage = (build) => {
@@ -77,24 +71,12 @@ function BuildInfo({ data }) {
     return formatDuration(build.duration);
   };
 
-  const handleViewLogs = async (build) => {
+  const handleViewStages = (build) => {
     if (!jobName || !build?.buildNumber) return;
-
-    setLogsBuild(build);
-    setLogsLoading(true);
-    setLogsError('');
-    setLogsContent('');
-    setLogsCommand('');
-
-    try {
-      const data = await jenkinsService.getBuildLogs(jobName, build.buildNumber);
-      setLogsContent(data.logs || '');
-      setLogsCommand(data.command || 'Pipeline');
-    } catch (err) {
-      setLogsError('Unable to load logs for this build.');
-    } finally {
-      setLogsLoading(false);
-    }
+    onViewStages?.({
+      jobName,
+      build,
+    });
   };
 
   return (
@@ -115,9 +97,9 @@ function BuildInfo({ data }) {
               <button
                 type="button"
                 className="view-logs-button"
-                onClick={() => handleViewLogs(lastBuild)}
+                onClick={() => handleViewStages(lastBuild)}
               >
-                View Logs
+                View Stages
               </button>
             )}
           </div>
@@ -146,8 +128,8 @@ function BuildInfo({ data }) {
               <BuildCard
                 key={build.buildNumber}
                 build={build}
-                canViewLogs={canViewLogs(build.status)}
-                onViewLogs={() => handleViewLogs(build)}
+                canViewStages={canViewLogs(build.status)}
+                onViewStages={() => handleViewStages(build)}
                 onSelectBuild={() => setSelectedBuild(build)}
               />
             ))}
@@ -176,27 +158,11 @@ function BuildInfo({ data }) {
       {selectedBuild && (
         <BuildModal
           build={selectedBuild}
-          canViewLogs={canViewLogs(selectedBuild.status)}
-          onViewLogs={() => handleViewLogs(selectedBuild)}
+          canViewStages={canViewLogs(selectedBuild.status)}
+          onViewStages={() => handleViewStages(selectedBuild)}
           onClose={() => {
             setSelectedBuild(null);
             setSearchError('');
-          }}
-        />
-      )}
-
-      {logsBuild && (
-        <BuildLogsModal
-          build={logsBuild}
-          logs={logsContent}
-          command={logsCommand}
-          loading={logsLoading}
-          error={logsError}
-          onClose={() => {
-            setLogsBuild(null);
-            setLogsError('');
-            setLogsContent('');
-            setLogsCommand('');
           }}
         />
       )}

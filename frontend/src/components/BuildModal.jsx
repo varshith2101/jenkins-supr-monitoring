@@ -1,7 +1,7 @@
 import { formatStatus, formatDuration, formatTimestamp, getStatusClass } from '../utils/formatters';
 import easterEggImage from '../assets/asset.png';
 
-function BuildModal({ build, onClose, onViewLogs, canViewLogs }) {
+function BuildModal({ build, onClose, onViewStages, canViewStages }) {
   if (!build) return null;
 
   const isEasterEgg = Number(build.buildNumber) === 696969;
@@ -69,9 +69,9 @@ function BuildModal({ build, onClose, onViewLogs, canViewLogs }) {
         </div>
         
         <div className="modal-footer">
-          {canViewLogs && (
-            <button className="primary-button" onClick={onViewLogs}>
-              View Logs
+          {canViewStages && (
+            <button className="primary-button" onClick={onViewStages}>
+              View Stages
             </button>
           )}
           <button className="secondary-button" onClick={onClose}>Close</button>

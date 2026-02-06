@@ -48,6 +48,26 @@ router.get(
   }
 );
 
+// Get pipeline stages and failed step logs
+router.get(
+  '/builds/:jobName/:buildNumber/stages',
+  authenticateToken,
+  authorizePermissions(['build:read']),
+  async (req, res) => {
+    const { jobName, buildNumber } = req.params;
+
+    try {
+      const data = await jenkinsModel.getBuildStages(jobName, parseInt(buildNumber));
+      res.json(data);
+    } catch (error) {
+      res.status(404).json({
+        error: 'Failed to fetch build stages',
+        message: error.message,
+      });
+    }
+  }
+);
+
 // Get build logs for a specific build
 router.get(
   '/builds/:jobName/:buildNumber/logs',

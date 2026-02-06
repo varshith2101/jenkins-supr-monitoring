@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import BuildInfo from './BuildInfo';
+import PipelineStagesPage from './PipelineStagesPage';
 import PipelineCard from './PipelineCard';
 import ParametersModal from './ParametersModal';
 import { jenkinsService } from '../services/jenkinsService';
@@ -24,6 +25,7 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
   const [summariesLoading, setSummariesLoading] = useState(false);
   const [viewMode, setViewMode] = useState('list');
   const [pipelineSearch, setPipelineSearch] = useState('');
+  const [stageViewBuild, setStageViewBuild] = useState(null);
 
   const canTrigger = ['admin', 'user'].includes(user?.role);
 
@@ -36,6 +38,8 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
     if (viewMode === 'detail' && selectedJob) {
       fetchBuildInfo();
       startAutoRefresh();
+    } else if (viewMode === 'stages') {
+      stopAutoRefresh();
     } else {
       stopAutoRefresh();
     }
@@ -191,6 +195,18 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
     setBuildData(null);
     setError('');
     setTriggerMessage('');
+    setStageViewBuild(null);
+  };
+
+  const handleViewStages = ({ jobName, build }) => {
+    if (!jobName || !build) return;
+    setSelectedJob(jobName);
+    setStageViewBuild(build);
+    setViewMode('stages');
+  };
+
+  const handleBackToBuild = () => {
+    setViewMode('detail');
   };
 
   const filteredPipelineSummaries = pipelineSummaries.filter((pipeline) =>
@@ -276,6 +292,13 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
                   </div>
                 )}
               </>
+            ) : viewMode === 'stages' ? (
+              <PipelineStagesPage
+                jobName={selectedJob}
+                build={stageViewBuild}
+                onBack={handleBackToBuild}
+                onLogout={onLogout}
+              />
             ) : (
               <>
                 <div className="panel-header">
@@ -321,7 +344,12 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
                   </div>
                 )}
 
-                {buildData && <BuildInfo data={buildData} />}
+                {buildData && (
+                  <BuildInfo
+                    data={buildData}
+                    onViewStages={handleViewStages}
+                  />
+                )}
               </>
             )}
           </div>

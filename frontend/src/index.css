@@ -1628,6 +1628,209 @@ body::after {
   text-transform: uppercase;
 }
 
+/* Pipeline Stages View */
+.pipeline-stages-view {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.pipeline-stages-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pipeline-stages-header h2 {
+  margin-top: 0.75rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.pipeline-stages-subheader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.failed-stage-chip {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--status-error);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.pipeline-graph {
+  background: radial-gradient(circle at top, rgba(0, 82, 204, 0.12), transparent 60%),
+    rgba(10, 10, 15, 0.8);
+  border-radius: 1rem;
+  border: 1px solid rgba(0, 82, 204, 0.2);
+  padding: 2.75rem 3rem;
+  min-height: 320px;
+  box-shadow: var(--shadow-md);
+  overflow-x: auto;
+}
+
+.pipeline-graph-svg {
+  width: 100%;
+  height: 320px;
+  min-width: 900px;
+}
+
+.pipeline-stage-label {
+  fill: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.pipeline-line {
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.pipeline-line.success {
+  stroke: var(--status-success);
+  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.45));
+}
+
+.pipeline-line.failure {
+  stroke: var(--status-error);
+  filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.45));
+}
+
+.pipeline-line.warning {
+  stroke: var(--status-warning);
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.45));
+}
+
+.pipeline-line.skipped,
+.pipeline-line.unknown {
+  stroke: rgba(148, 163, 184, 0.35);
+}
+
+.pipeline-line.in-progress {
+  stroke: var(--primary-bright);
+  filter: drop-shadow(0 0 6px rgba(85, 136, 255, 0.45));
+}
+
+.pipeline-node {
+  stroke-width: 3;
+  stroke: rgba(255, 255, 255, 0.2);
+  fill: var(--bg-surface);
+}
+
+.pipeline-node.success {
+  fill: var(--status-success);
+  stroke: var(--status-success);
+  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+}
+
+.pipeline-node.failure {
+  fill: var(--status-error);
+  stroke: var(--status-error);
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.5));
+}
+
+.pipeline-node.warning {
+  fill: var(--status-warning);
+  stroke: var(--status-warning);
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
+}
+
+.pipeline-node.skipped,
+.pipeline-node.unknown,
+.pipeline-node.start,
+.pipeline-node.end {
+  fill: rgba(148, 163, 184, 0.5);
+  stroke: rgba(148, 163, 184, 0.5);
+}
+
+.pipeline-node.in-progress {
+  fill: var(--primary-bright);
+  stroke: var(--primary-light);
+  filter: drop-shadow(0 0 8px rgba(85, 136, 255, 0.5));
+}
+
+.pipeline-failure-link {
+  stroke: var(--status-error);
+  stroke-width: 3;
+  fill: none;
+  opacity: 0.7;
+  stroke-dasharray: 6 6;
+}
+
+.pipeline-steps-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.pipeline-steps-section h3 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.pipeline-steps-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pipeline-step {
+  border: 1px solid var(--border-default);
+  border-radius: 0.75rem;
+  background: var(--bg-elevated);
+  padding: 0.5rem 0.75rem;
+}
+
+.pipeline-step summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pipeline-step summary::-webkit-details-marker {
+  display: none;
+}
+
+.pipeline-step-status {
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.pipeline-step-status.passed {
+  color: var(--status-success);
+}
+
+.pipeline-step-status.failed {
+  color: var(--status-error);
+}
+
+.pipeline-step-logs {
+  margin-top: 0.75rem;
+  background: #050505;
+  color: #e2e8f0;
+  border-radius: 0.75rem;
+  border: 1px solid #1f1f1f;
+  padding: 0.75rem;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 0.78rem;
+  max-height: 280px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
 .build-detail {
   display: grid;
   gap: 0.5rem;

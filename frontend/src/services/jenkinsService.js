@@ -46,6 +46,16 @@ const jenkinsService = {
     return response.data;
   },
 
+  async getBuildStages(jobName, buildNumber) {
+    const response = await axios.get(
+      `${API_BASE_URL}/api/builds/${jobName}/${buildNumber}/stages`,
+      {
+        headers: getAuthHeaders(),
+      }
+    );
+    return response.data;
+  },
+
   async getJobParameters(jobName) {
     const response = await axios.get(
       `${API_BASE_URL}/api/jobs/${jobName}/parameters`,

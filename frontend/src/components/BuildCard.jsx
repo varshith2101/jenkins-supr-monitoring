@@ -1,6 +1,6 @@
 import { formatStatus, formatDuration, formatTimestamp, getStatusClass } from '../utils/formatters';
 
-function BuildCard({ build, canViewLogs, onViewLogs, onSelectBuild }) {
+function BuildCard({ build, canViewStages, onViewStages, onSelectBuild }) {
   const statusClass = getStatusClass(build.status);
   const statusValue = String(build.status || '').toLowerCase();
   const isFailedStage = ['failure', 'failed', 'aborted'].includes(statusValue);
@@ -43,16 +43,16 @@ function BuildCard({ build, canViewLogs, onViewLogs, onSelectBuild }) {
         <div className={`build-detail-value${isFailedStage ? ' failed-stage-badge' : ''}`}>
           {isFailedStage ? failedStageLabel : formatDuration(build.duration)}
         </div>
-        {canViewLogs && (
+        {canViewStages && (
           <button
             type="button"
             className="view-logs-button"
             onClick={(event) => {
               event.stopPropagation();
-              onViewLogs?.();
+              onViewStages?.();
             }}
           >
-            View Logs
+            View Stages
           </button>
         )}
       </div>

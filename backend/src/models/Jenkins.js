@@ -25,6 +25,100 @@ class JenkinsModel {
       .join('/job/');
   }
 
+  async getBlueOceanStages(jobName, buildNumber) {
+    try {
+      const pipelineName = encodeURIComponent(jobName);
+      const blueUrl = `${this.jenkinsUrl}/blue/rest/organizations/jenkins/pipelines/${pipelineName}/runs/${buildNumber}/nodes/`;
+      const response = await axios.get(blueUrl, {
+        auth: this.auth,
+        timeout: 4000,
+        validateStatus: () => true,
+      });
+
+      if (response.status !== 200 || !Array.isArray(response.data)) {
+        return [];
+      }
+
+      return response.data.map((node) => ({
+        id: node.id,
+        name: node.displayName || node.name,
+        status: node.result || node.state || 'UNKNOWN',
+        durationMillis: node.durationMillis || node.durationInMillis,
+        startTimeMillis: node.startTimeMillis || node.startTime,
+      })).filter((stage) => stage.name);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  async getBlueOceanSteps(jobName, buildNumber, stageName) {
+    try {
+      const pipelineName = encodeURIComponent(jobName);
+      const nodesUrl = `${this.jenkinsUrl}/blue/rest/organizations/jenkins/pipelines/${pipelineName}/runs/${buildNumber}/nodes/`;
+      const nodesResponse = await axios.get(nodesUrl, {
+        auth: this.auth,
+        timeout: 4000,
+        validateStatus: () => true,
+      });
+
+      if (nodesResponse.status !== 200 || !Array.isArray(nodesResponse.data)) {
+        return [];
+      }
+
+      const stageNode = nodesResponse.data.find((node) =>
+        (node.displayName || node.name) === stageName
+      );
+
+      if (!stageNode?.id) {
+        return [];
+      }
+
+      const stepsUrl = `${this.jenkinsUrl}/blue/rest/organizations/jenkins/pipelines/${pipelineName}/runs/${buildNumber}/nodes/${stageNode.id}/steps/`;
+      const stepsResponse = await axios.get(stepsUrl, {
+        auth: this.auth,
+        timeout: 4000,
+        validateStatus: () => true,
+      });
+
+      if (stepsResponse.status !== 200 || !Array.isArray(stepsResponse.data)) {
+        return [];
+      }
+
+      const steps = await Promise.all(
+        stepsResponse.data.map(async (step) => {
+          let logText = '';
+          try {
+            const logUrl = `${this.jenkinsUrl}/blue/rest/organizations/jenkins/pipelines/${pipelineName}/runs/${buildNumber}/nodes/${stageNode.id}/steps/${step.id}/log/`;
+            const logResponse = await axios.get(logUrl, {
+              auth: this.auth,
+              timeout: 4000,
+              responseType: 'text',
+              validateStatus: () => true,
+            });
+            if (logResponse.status === 200) {
+              logText = logResponse.data || '';
+            }
+          } catch (error) {
+            // ignore step log failures
+          }
+
+          const statusValue = String(step.result || step.state || '').toLowerCase();
+          const status = statusValue === 'failure' || statusValue === 'failed' ? 'failed' : 'passed';
+
+          return {
+            name: step.displayName || step.name || 'Step',
+            status,
+            logs: logText,
+          };
+        })
+      );
+
+      return steps;
+    } catch (error) {
+      return [];
+    }
+  }
+
   extractFailedStageFromLogs(logText) {
     if (!logText) return null;
     const lines = logText.split('\n');
@@ -52,22 +146,130 @@ class JenkinsModel {
     };
 
     const errorPattern = /ERROR:|Finished: FAILURE|Finished: ABORTED|script returned exit code|AbortException|FlowInterruptedException|Exception:|hudson\.AbortException|^\s*\[Pipeline\] error/;
+    const stageBlocks = [];
     let currentStage = null;
-    let lastNonDeclarativeStage = null;
 
     for (let i = 0; i < lines.length; i += 1) {
       const stageName = stageFromLine(lines[i]);
       if (stageName && !isDeclarativeStage(stageName)) {
         currentStage = stageName;
-        lastNonDeclarativeStage = stageName;
+        if (!stageBlocks.find((stage) => stage.name === stageName)) {
+          stageBlocks.push({ name: stageName, hasError: false, index: stageBlocks.length });
+        }
       }
 
-      if (errorPattern.test(lines[i])) {
-        if (currentStage) return currentStage;
+      if (currentStage && errorPattern.test(lines[i])) {
+        const stageBlock = stageBlocks.find((stage) => stage.name === currentStage);
+        if (stageBlock) stageBlock.hasError = true;
       }
     }
 
-    return lastNonDeclarativeStage;
+    const erroredStage = [...stageBlocks].reverse().find((stage) => stage.hasError);
+    if (erroredStage) return erroredStage.name;
+
+    return stageBlocks.length > 0 ? stageBlocks[stageBlocks.length - 1].name : null;
+  }
+
+  parseStepsFromLogs(logText, failedStageName) {
+    if (!logText || !failedStageName) return [];
+    const lines = logText.split('\n');
+    const steps = [];
+    const errorPattern = /ERROR:|Finished: FAILURE|Finished: ABORTED|script returned exit code|AbortException|FlowInterruptedException|Exception:|hudson\.AbortException|^\s*\[Pipeline\] error/;
+    const isDeclarativeStage = (name) => {
+      if (!name) return false;
+      return (
+        name.startsWith('Declarative:') ||
+        name === 'Declarative: Checkout SCM' ||
+        name === 'Declarative: Post Actions' ||
+        name === 'Checkout SCM'
+      );
+    };
+    const stageFromLine = (line) => {
+      const pipelineMatch = line.match(/\[Pipeline\] \{ \((.+)\)/);
+      if (pipelineMatch?.[1]) return pipelineMatch[1].trim();
+      const enteringMatch = line.match(/Entering stage \[(.+)\]/);
+      if (enteringMatch?.[1]) return enteringMatch[1].trim();
+      const stageMatch = line.match(/Stage "(.+)"/);
+      if (stageMatch?.[1]) return stageMatch[1].trim();
+      return null;
+    };
+    const commandFromLine = (line) => {
+      const trimmed = line.trim();
+      const plusMatch = trimmed.match(/^\+\s+(.+)/);
+      if (plusMatch?.[1]) return plusMatch[1].trim();
+      const batMatch = trimmed.match(/^>\s+(.+)/);
+      if (batMatch?.[1]) return batMatch[1].trim();
+      const dollarMatch = trimmed.match(/^\$\s+(.+)/);
+      if (dollarMatch?.[1]) return dollarMatch[1].trim();
+      return null;
+    };
+
+    let currentStage = null;
+    let inFailedStage = false;
+    let currentStep = null;
+    let sawError = false;
+
+    const pushStep = () => {
+      if (currentStep) {
+        steps.push(currentStep);
+        currentStep = null;
+      }
+    };
+
+    for (let i = 0; i < lines.length; i += 1) {
+      const stageName = stageFromLine(lines[i]);
+      if (stageName && !isDeclarativeStage(stageName)) {
+        currentStage = stageName;
+        if (inFailedStage && stageName !== failedStageName) {
+          pushStep();
+        }
+        inFailedStage = stageName === failedStageName;
+      }
+
+      if (!inFailedStage) {
+        continue;
+      }
+
+      const command = commandFromLine(lines[i]);
+      if (command) {
+        pushStep();
+        currentStep = {
+          name: command,
+          status: 'passed',
+          logs: [lines[i]],
+        };
+        continue;
+      }
+
+      if (currentStep) {
+        currentStep.logs.push(lines[i]);
+        if (errorPattern.test(lines[i])) {
+          currentStep.status = 'failed';
+          sawError = true;
+        }
+      } else if (errorPattern.test(lines[i])) {
+        sawError = true;
+      }
+    }
+
+    pushStep();
+
+    if (!steps.length) {
+      return [];
+    }
+
+    if (!steps.some((step) => step.status === 'failed') && sawError) {
+      steps[steps.length - 1].status = 'failed';
+    }
+
+    if (!steps.some((step) => step.status === 'failed')) {
+      steps[steps.length - 1].status = 'failed';
+    }
+
+    return steps.map((step) => ({
+      ...step,
+      logs: step.logs.join('\n'),
+    }));
   }
 
   extractCommandFromLogs(logText) {
@@ -144,6 +346,75 @@ class JenkinsModel {
     return null;
   }
 
+  async getBuildStages(jobName, buildNumber) {
+    try {
+      const jobPath = this.getJobPath(jobName);
+      const buildUrl = `${this.jenkinsUrl}/job/${jobPath}/${buildNumber}/api/json`;
+      const buildResponse = await axios.get(buildUrl, {
+        auth: this.auth,
+        timeout: 3000,
+        validateStatus: () => true,
+      });
+
+      if (buildResponse.status !== 200) {
+        throw new Error('Build not found');
+      }
+
+      const buildData = buildResponse.data;
+      const stages = await this.getWorkflowStages(jobName, buildNumber);
+      const stageSummary = (stages || []).map((stage) => ({
+        id: stage.id,
+        name: stage.name,
+        status: stage.status,
+        durationMillis: stage.durationMillis,
+        startTimeMillis: stage.startTimeMillis,
+      }));
+
+      const logUrl = `${this.jenkinsUrl}/job/${jobPath}/${buildNumber}/consoleText`;
+      const logResponse = await axios.get(logUrl, {
+        auth: this.auth,
+        timeout: 5000,
+        responseType: 'text',
+        validateStatus: () => true,
+      });
+      const logText = logResponse.status === 200 ? (logResponse.data || '') : '';
+
+      let failedStage = null;
+      if (buildData.result && ['FAILURE', 'ABORTED'].includes(String(buildData.result).toUpperCase())) {
+        failedStage = this.pickFailedStageFromStages(stages);
+        if (!failedStage) {
+          failedStage = this.extractFailedStageFromLogs(logText);
+        }
+        if (!failedStage) {
+          failedStage = await this.getFailedStageFromLogs(jobName, buildNumber);
+        }
+      }
+
+      if (!failedStage && stages?.length) {
+        failedStage = this.pickFailedStageFromStages(stages);
+      }
+      if (!failedStage && logText) {
+        failedStage = this.extractFailedStageFromLogs(logText);
+      }
+
+      let steps = this.parseStepsFromLogs(logText, failedStage);
+      if (!steps.length && failedStage) {
+        steps = await this.getBlueOceanSteps(jobName, buildNumber, failedStage);
+      }
+
+      return {
+        buildNumber: buildData.number,
+        status: buildData.result || (buildData.building ? 'IN_PROGRESS' : 'UNKNOWN'),
+        stages: stageSummary,
+        failedStage,
+        steps,
+      };
+    } catch (error) {
+      console.error('Jenkins Stages Error:', error.message);
+      throw new Error('Failed to fetch build stages');
+    }
+  }
+
   async getFailedStageFromLogs(jobName, buildNumber) {
     try {
       const jobPath = this.getJobPath(jobName);
@@ -175,13 +446,13 @@ class JenkinsModel {
         validateStatus: () => true,
       });
 
-      if (wfResponse.status !== 200) {
-        return [];
+      if (wfResponse.status === 200) {
+        return wfResponse.data.stages || [];
       }
 
-      return wfResponse.data.stages || [];
+      return await this.getBlueOceanStages(jobName, buildNumber);
     } catch (error) {
-      return [];
+      return await this.getBlueOceanStages(jobName, buildNumber);
     }
   }
 
