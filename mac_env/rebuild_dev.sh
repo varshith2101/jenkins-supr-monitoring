@@ -2,12 +2,33 @@
 set -euo pipefail
 
 # -------------------------------------------------
+# macOS: ensure Docker is available and running
+# -------------------------------------------------
+if ! command -v docker >/dev/null 2>&1; then
+  DOCKER_DESKTOP_BIN="/Applications/Docker.app/Contents/Resources/bin"
+  if [ -x "$DOCKER_DESKTOP_BIN/docker" ]; then
+    export PATH="$DOCKER_DESKTOP_BIN:$PATH"
+  else
+    echo "[ERROR] Docker is not installed. Install Docker Desktop for Mac and try again."
+    exit 1
+  fi
+fi
+
+if ! docker info >/dev/null 2>&1; then
+  echo "[ERROR] Docker daemon is not running. Start Docker Desktop and try again."
+  exit 1
+fi
+
+# -------------------------------------------------
 # Detect docker compose (v2 preferred, v1 fallback)
 # -------------------------------------------------
-if command -v docker-compose >/dev/null 2>&1; then
+if docker compose version >/dev/null 2>&1; then
+  DC="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
   DC="docker-compose"
 else
-  DC="docker compose"
+  echo "[ERROR] Docker Compose is not available."
+  exit 1
 fi
 
 # -------------------------------------------------

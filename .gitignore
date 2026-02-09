@@ -18,6 +18,9 @@ build/
 *.log
 logs/
 
+# Test reports
+reports/
+
 # OS files
 .DS_Store
 Thumbs.db
@@ -30,9 +33,6 @@ Thumbs.db
 
 # Docker
 .docker/
-
-# macOS env scripts
-mac_env/
 
 test.txt
 

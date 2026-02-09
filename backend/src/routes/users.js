@@ -4,10 +4,9 @@ import { authenticateToken, authorizePermissions, availableRoles } from '../midd
 import AuditLog from '../models/AuditLog.js';
 
 const router = express.Router();
+const requireUserManage = [authenticateToken, authorizePermissions(['user:manage'])];
 
-router.use(authenticateToken, authorizePermissions(['user:manage']));
-
-router.get('/users', async (req, res) => {
+router.get('/users', ...requireUserManage, async (req, res) => {
   try {
     const users = await UserDB.getAllUsers();
     res.json({ users });
@@ -17,7 +16,7 @@ router.get('/users', async (req, res) => {
   }
 });
 
-router.post('/users', async (req, res) => {
+router.post('/users', ...requireUserManage, async (req, res) => {
   const { username, password, role, displayName, lead, pipelines } = req.body;
 
   if (!username || !password) {
@@ -65,7 +64,7 @@ router.post('/users', async (req, res) => {
   }
 });
 
-router.patch('/users/:username', async (req, res) => {
+router.patch('/users/:username', ...requireUserManage, async (req, res) => {
   const { username } = req.params;
   const { password, role, displayName, lead, pipelines } = req.body;
 
@@ -109,7 +108,7 @@ router.patch('/users/:username', async (req, res) => {
   }
 });
 
-router.delete('/users/:username', async (req, res) => {
+router.delete('/users/:username', ...requireUserManage, async (req, res) => {
   const { username } = req.params;
 
   try {
