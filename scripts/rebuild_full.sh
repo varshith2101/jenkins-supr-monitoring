@@ -1,9 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
-COMPOSE_FILE="docker-compose.yml"
-if [ "${USE_EXTERNAL_JENKINS:-}" = "1" ]; then
-  COMPOSE_FILE="docker-compose.external-jenkins.yml"
+if [ -n "${COMPOSE_FILE_OVERRIDE:-}" ]; then
+  COMPOSE_FILE="$COMPOSE_FILE_OVERRIDE"
+else
+  COMPOSE_FILE="docker-compose.yml"
+  if [ "${USE_EXTERNAL_JENKINS:-}" = "1" ]; then
+    COMPOSE_FILE="docker-compose.external-jenkins.yml"
+  fi
 fi
 
 echo "[INFO] Using compose file: $COMPOSE_FILE"
