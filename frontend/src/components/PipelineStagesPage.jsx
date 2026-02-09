@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+    import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import BuildLogsModal from './BuildLogsModal';
 import { jenkinsService } from '../services/jenkinsService';
 import { formatStatus, getStatusClass } from '../utils/formatters';
@@ -24,6 +24,13 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
   const [logsCommand, setLogsCommand] = useState('');
   const [logsLoading, setLogsLoading] = useState(false);
   const [logsError, setLogsError] = useState('');
+  const trackRef = useRef(null);
+  const failedDotRef = useRef(null);
+  const failedNextDotRef = useRef(null);
+  const penultimateDotRef = useRef(null);
+  const endDotRef = useRef(null);
+  const [failurePath, setFailurePath] = useState('');
+  const [failureBox, setFailureBox] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     if (!jobName || !build?.buildNumber) return;
@@ -82,109 +89,167 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
     return graphData.findIndex((stage) => stage.name === stageData.failedStage);
   }, [graphData, stageData?.failedStage]);
 
+  useLayoutEffect(() => {
+    if (
+      !trackRef.current
+      || !failedDotRef.current
+      || !failedNextDotRef.current
+      || !penultimateDotRef.current
+      || !endDotRef.current
+    ) {
+      setFailurePath('');
+      return;
+    }
+
+    const trackRect = trackRef.current.getBoundingClientRect();
+    const failedRect = failedDotRef.current.getBoundingClientRect();
+  const nextRect = failedNextDotRef.current.getBoundingClientRect();
+  const penultimateRect = penultimateDotRef.current.getBoundingClientRect();
+  const endRect = endDotRef.current.getBoundingClientRect();
+
+  const failedCenterX = failedRect.left - trackRect.left + failedRect.width / 2;
+  const failedCenterY = failedRect.top - trackRect.top + failedRect.height / 2;
+  const nextCenterX = nextRect.left - trackRect.left + nextRect.width / 2;
+  const nextCenterY = nextRect.top - trackRect.top + nextRect.height / 2;
+  const penultimateCenterX = penultimateRect.left - trackRect.left + penultimateRect.width / 2;
+  const penultimateCenterY = penultimateRect.top - trackRect.top + penultimateRect.height / 2;
+  const endCenterX = endRect.left - trackRect.left + endRect.width / 2;
+  const endCenterY = endRect.top - trackRect.top + endRect.height / 2;
+
+  const startX = (failedCenterX + nextCenterX) / 2;
+  const startY = (failedCenterY + nextCenterY) / 2;
+  const endX = endCenterX;
+  const endY = endCenterY;
+
+  const drop = 58;
+  const span = Math.max(endX - startX, 0);
+  const controlOffset = Math.min(170, Math.max(58, span * 0.24));
+  const earlyPull = Math.min(68, Math.max(18, controlOffset * 0.32));
+
+    const path = `M ${startX} ${startY}`
+      + ` C ${startX + earlyPull} ${startY}, ${startX + earlyPull} ${startY + drop}, ${startX + controlOffset} ${startY + drop}`
+      + ` L ${endX - controlOffset} ${startY + drop}`
+      + ` C ${endX - controlOffset / 2} ${startY + drop}, ${endX - controlOffset / 2} ${endY}, ${endX} ${endY}`;
+
+    setFailureBox({ width: trackRect.width, height: trackRect.height });
+    setFailurePath(path);
+  }, [failedStageIndex, graphData]);
+
+  useEffect(() => {
+  if (!trackRef.current) return undefined;
+
+    const observer = new ResizeObserver(() => {
+      if (
+        failedDotRef.current
+        && failedNextDotRef.current
+        && penultimateDotRef.current
+        && endDotRef.current
+      ) {
+        const trackRect = trackRef.current.getBoundingClientRect();
+        const failedRect = failedDotRef.current.getBoundingClientRect();
+        const nextRect = failedNextDotRef.current.getBoundingClientRect();
+        const penultimateRect = penultimateDotRef.current.getBoundingClientRect();
+        const endRect = endDotRef.current.getBoundingClientRect();
+
+        const failedCenterX = failedRect.left - trackRect.left + failedRect.width / 2;
+        const failedCenterY = failedRect.top - trackRect.top + failedRect.height / 2;
+        const nextCenterX = nextRect.left - trackRect.left + nextRect.width / 2;
+        const nextCenterY = nextRect.top - trackRect.top + nextRect.height / 2;
+        const penultimateCenterX = penultimateRect.left - trackRect.left + penultimateRect.width / 2;
+        const penultimateCenterY = penultimateRect.top - trackRect.top + penultimateRect.height / 2;
+        const endCenterX = endRect.left - trackRect.left + endRect.width / 2;
+        const endCenterY = endRect.top - trackRect.top + endRect.height / 2;
+
+        const startX = (failedCenterX + nextCenterX) / 2;
+        const startY = (failedCenterY + nextCenterY) / 2;
+  const endX = endCenterX;
+  const endY = endCenterY;
+  const drop = 58;
+  const span = Math.max(endX - startX, 0);
+  const controlOffset = Math.min(170, Math.max(58, span * 0.24));
+  const earlyPull = Math.min(68, Math.max(18, controlOffset * 0.32));
+
+        const path = `M ${startX} ${startY}`
+          + ` C ${startX + earlyPull} ${startY}, ${startX + earlyPull} ${startY + drop}, ${startX + controlOffset} ${startY + drop}`
+          + ` L ${endX - controlOffset} ${startY + drop}`
+          + ` C ${endX - controlOffset / 2} ${startY + drop}, ${endX - controlOffset / 2} ${endY}, ${endX} ${endY}`;
+
+        setFailureBox({ width: trackRect.width, height: trackRect.height });
+        setFailurePath(path);
+      }
+    });
+
+    observer.observe(trackRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const renderGraph = () => {
-    const totalStages = graphData.length;
-    const nodeCount = totalStages + 2; // start + end
-  const nodeGap = 200;
-  const startX = 90;
-  const centerY = 120;
-    const endX = startX + nodeGap * (nodeCount - 1);
-    const viewWidth = endX + startX;
-  const viewHeight = 320;
-
-    const splitLabel = (label, maxLength = 14) => {
-      if (!label) return [];
-      const words = label.split(' ');
-      const lines = [];
-      let current = '';
-
-      words.forEach((word) => {
-        const next = current ? `${current} ${word}` : word;
-        if (next.length <= maxLength) {
-          current = next;
-        } else {
-          if (current) lines.push(current);
-          current = word;
-        }
-      });
-
-      if (current) lines.push(current);
-      return lines.length ? lines : [label];
-    };
+  const totalStages = graphData.length;
+  const nodeCount = totalStages + 2; // start + end
+  const lineCenter = 150;
 
     const nodePositions = [
-      { x: startX, label: 'Start', status: 'skipped', type: 'start' },
-      ...graphData.map((stage, index) => ({
-        x: startX + nodeGap * (index + 1),
+      { label: 'Start', status: 'skipped', type: 'start' },
+      ...graphData.map((stage) => ({
         label: stage.name,
         status: stage.normalizedStatus,
         type: 'stage',
       })),
-      { x: endX, label: 'End', status: 'skipped', type: 'end' },
+      { label: 'End', status: 'skipped', type: 'end' },
     ];
 
+  const failedNodeIndex = failedStageIndex >= 0 ? failedStageIndex + 1 : -1;
+  const failedNextNodeIndex = failedNodeIndex >= 0 ? failedNodeIndex + 1 : -1;
+  const penultimateNodeIndex = nodePositions.length - 2;
+
     return (
-      <div className="pipeline-graph">
-        <svg
-          className="pipeline-graph-svg"
-          viewBox={`0 0 ${viewWidth} ${viewHeight}`}
-          preserveAspectRatio="xMidYMid meet"
+      <div className="pipeline-graph pipeline-graph-html">
+        <div
+          ref={trackRef}
+          className="pipeline-track"
+          style={{
+            '--line-center': `${lineCenter}px`,
+          }}
         >
-          {nodePositions.slice(0, -1).map((node, index) => {
-            const nextNode = nodePositions[index + 1];
-            const stageStatus = index === 0
+          {nodePositions.map((node, index) => {
+            const lineStatus = index === 0
               ? graphData[0]?.normalizedStatus
               : graphData[index - 1]?.normalizedStatus;
-            const lineStatus = stageStatus || 'skipped';
+            const isFailedNode = index === failedNodeIndex;
+            const isPenultimateNode = index === penultimateNodeIndex;
+            const isEndNode = index === nodePositions.length - 1;
+            const isFailureEnd = isEndNode && failedNodeIndex >= 0;
+            const isFailedNextNode = index === failedNextNodeIndex;
 
             return (
-              <line
-                key={`line-${index}`}
-                x1={node.x}
-                y1={centerY}
-                x2={nextNode.x}
-                y2={centerY}
-                className={`pipeline-line ${lineStatus}`}
-              />
+              <div key={`${node.label}-${index}`} className={`pipeline-node-wrapper ${node.type}`}>
+                {node.type === 'stage' && (
+                  <div className="pipeline-stage-label">{node.label}</div>
+                )}
+                <div
+                  ref={isFailedNode ? failedDotRef
+                    : isFailedNextNode ? failedNextDotRef
+                      : isPenultimateNode ? penultimateDotRef
+                        : isEndNode ? endDotRef : undefined}
+                  className={`pipeline-node-dot ${node.status} ${node.type} ${isFailureEnd ? 'failure-end' : ''}`}
+                />
+                {index < nodePositions.length - 1 && (
+                  <div className={`pipeline-segment ${lineStatus || 'skipped'}`} />
+                )}
+              </div>
             );
           })}
 
-          {failedStageIndex >= 0 && failedStageIndex < graphData.length - 1 && (
-            <path
-              className="pipeline-failure-link"
-              d={`M ${startX + nodeGap * (failedStageIndex + 1)} ${centerY} V ${centerY + 30} H ${endX} V ${centerY}`}
-            />
+          {failedNodeIndex >= 0 && failedStageIndex < graphData.length - 1 && failurePath && (
+            <svg
+              className="pipeline-failure-svg"
+              viewBox={`0 0 ${failureBox.width} ${failureBox.height}`}
+              preserveAspectRatio="none"
+            >
+              <path className="pipeline-failure-path" d={failurePath} />
+            </svg>
           )}
-
-          {nodePositions.map((node, index) => (
-            <g key={`node-${index}`}>
-              <circle
-                cx={node.x}
-                cy={centerY}
-                r={node.type === 'stage' ? 12 : 7}
-                className={`pipeline-node ${node.status} ${node.type}`}
-              />
-              {node.type === 'stage' && (
-                <text
-                  x={node.x}
-                  y={centerY - 36}
-                  textAnchor="middle"
-                  className="pipeline-stage-label"
-                >
-                  {splitLabel(node.label).map((line, lineIndex) => (
-                    <tspan
-                      key={`${node.label}-${lineIndex}`}
-                      x={node.x}
-                      dy={lineIndex === 0 ? 0 : 16}
-                    >
-                      {line}
-                    </tspan>
-                  ))}
-                </text>
-              )}
-            </g>
-          ))}
-        </svg>
+        </div>
       </div>
     );
   };

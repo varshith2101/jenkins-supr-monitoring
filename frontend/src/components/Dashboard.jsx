@@ -248,7 +248,11 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
         </div>
       </header>
 
-      <div className="dashboard-container dashboard-container-narrow">
+      <div
+        className={`dashboard-container ${
+          viewMode === 'stages' ? 'dashboard-container-wide' : 'dashboard-container-narrow'
+        }`}
+      >
         <section className="dashboard-grid dashboard-grid-single">
           <div className="panel panel-primary">
             {viewMode === 'list' ? (

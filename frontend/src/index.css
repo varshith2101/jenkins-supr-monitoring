@@ -1203,6 +1203,10 @@ body::after {
   max-width: 1200px;
 }
 
+.dashboard-container.dashboard-container-wide {
+  max-width: 1800px;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -1634,6 +1638,10 @@ body::after {
   gap: 1.5rem;
 }
 
+.pipeline-stages-view .panel {
+  width: 100%;
+}
+
 .pipeline-stages-header {
   display: flex;
   align-items: center;
@@ -1666,20 +1674,167 @@ body::after {
 }
 
 .pipeline-graph {
-  background: radial-gradient(circle at top, rgba(0, 82, 204, 0.12), transparent 60%),
-    rgba(10, 10, 15, 0.8);
+  background: radial-gradient(circle at top, rgba(0, 82, 204, 0.15), transparent 60%),
+    rgba(10, 10, 15, 0.85);
   border-radius: 1rem;
   border: 1px solid rgba(0, 82, 204, 0.2);
-  padding: 2.75rem 3rem;
+  padding: 2.25rem 2.5rem;
   min-height: 320px;
   box-shadow: var(--shadow-md);
-  overflow-x: auto;
+  overflow: hidden;
 }
 
-.pipeline-graph-svg {
+.pipeline-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
-  height: 320px;
-  min-width: 900px;
+  min-height: 240px;
+}
+
+.pipeline-node-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  min-height: 220px;
+}
+
+.pipeline-stage-label {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  max-width: 160px;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.pipeline-node-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  background: var(--bg-surface);
+  z-index: 2;
+  position: absolute;
+  top: var(--line-center, 150px);
+  transform: translateY(-50%);
+}
+
+.pipeline-segment {
+  position: absolute;
+  top: var(--line-center, 150px);
+  left: 50%;
+  height: 6px;
+  width: 100%;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.35);
+  transform: translateY(-50%);
+}
+
+.pipeline-node-wrapper.start .pipeline-node-dot,
+.pipeline-node-wrapper.end .pipeline-node-dot {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+
+.pipeline-segment.success {
+  background: var(--status-success);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
+}
+
+.pipeline-segment.failure {
+  background: var(--status-error);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.45);
+}
+
+.pipeline-segment.warning {
+  background: var(--status-warning);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
+}
+
+.pipeline-segment.in-progress {
+  background: var(--primary-bright);
+  box-shadow: 0 0 10px rgba(85, 136, 255, 0.45);
+}
+
+.pipeline-node-dot.success {
+  background: var(--status-success);
+  border-color: var(--status-success);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.55);
+}
+
+.pipeline-node-dot.failure {
+  background: var(--status-error);
+  border-color: var(--status-error);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.55);
+}
+
+.pipeline-node-dot.warning {
+  background: var(--status-warning);
+  border-color: var(--status-warning);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.55);
+}
+
+.pipeline-node-dot.in-progress {
+  background: var(--primary-bright);
+  border-color: var(--primary-light);
+  box-shadow: 0 0 12px rgba(85, 136, 255, 0.55);
+}
+
+.pipeline-node-dot.skipped,
+.pipeline-node-dot.unknown,
+.pipeline-node-dot.start,
+.pipeline-node-dot.end {
+  background: rgba(148, 163, 184, 0.6);
+  border-color: rgba(148, 163, 184, 0.6);
+}
+
+.pipeline-node-dot.failure-end {
+  background: rgba(239, 68, 68, 0.9);
+  border-color: rgba(239, 68, 68, 0.9);
+  box-shadow:
+    0 0 10px rgba(239, 68, 68, 0.5),
+    0 0 20px rgba(239, 68, 68, 0.45),
+    0 0 35px rgba(239, 68, 68, 0.35);
+}
+
+.pipeline-failure-bridge {
+  position: absolute;
+  top: calc(var(--line-center, 150px) + 35px);
+  height: 3px;
+  border-radius: 999px;
+  background: var(--status-error);
+  opacity: 0.7;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
+}
+
+.pipeline-failure-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.pipeline-failure-path {
+  fill: none;
+  stroke: var(--status-error);
+  stroke-width: 2.5;
+  opacity: 0.8;
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.45));
 }
 
 .pipeline-stage-label {
