@@ -149,6 +149,31 @@ services:
         npm install &&
         npm test
 
+  ui_test_runner:
+    image: mcr.microsoft.com/playwright:v1.49.0-jammy
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - ./reports:/reports
+    networks:
+      - devops_network
+    environment:
+      - UI_BASE_URL=http://nginx
+      - UI_REPORT_DIR=/reports/ui
+    depends_on:
+      backend:
+        condition: service_healthy
+      nginx:
+        condition: service_started
+    command:
+      - bash
+      - -c
+      - >-
+        node /app/scripts/ci/wait_for_http.js http://nginx/health &&
+        cd /app/ui-tests &&
+        npm install &&
+        npx playwright test
+
 volumes:
   jenkins_home:
   db_data:

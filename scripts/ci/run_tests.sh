@@ -62,4 +62,7 @@ echo "[INFO] Running test container..."
 # -------------------------------------------------
 $DC -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" run --rm test_runner
 
+echo "[INFO] Running UI test container..."
+$DC -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" run --rm ui_test_runner
+
 echo "[SUCCESS] Tests completed."
