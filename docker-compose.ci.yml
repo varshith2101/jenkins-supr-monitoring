@@ -105,7 +105,7 @@ services:
       - "5111:80"
 
   test_runner:
-    image: node:18-alpine
+    image: node:18-bullseye-slim
     working_dir: /app
     volumes:
       - ./:/app
@@ -129,11 +129,12 @@ services:
       - sh
       - -c
       - >-
-        apk add --no-cache python3 make g++ &&
-        node /app/scripts/ci/wait_for_http.js http://nginx/health &&
-        cd /app/backend &&
-        npm install &&
-        npm test
+          apt-get update && apt-get install -y --no-install-recommends python3 make g++ &&
+          rm -rf /var/lib/apt/lists/* &&
+          node /app/scripts/ci/wait_for_http.js http://nginx/health &&
+          cd /app/backend &&
+          npm install &&
+          npm test
 
 volumes:
   db_data:
