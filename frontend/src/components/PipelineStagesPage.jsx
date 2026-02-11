@@ -256,6 +256,8 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
 
   const steps = stageData?.steps || [];
   const failedStageName = stageData?.failedStage;
+  const isAborted = String(build?.status || '').toLowerCase() === 'aborted';
+  const failedStagePrefix = isAborted ? 'Aborted' : 'Failed';
 
   return (
     <div className="pipeline-stages-view">
@@ -274,7 +276,7 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
           {formatStatus(build?.status)}
         </div>
         {failedStageName && (
-          <div className="failed-stage-chip">Failed at {failedStageName}</div>
+          <div className="failed-stage-chip">{failedStagePrefix} at {failedStageName}</div>
         )}
       </div>
 
