@@ -1493,6 +1493,7 @@ body::after {
   opacity: 0;
   transition: opacity 0.3s ease;
   box-shadow: 0 0 10px var(--primary-glow);
+  pointer-events: none;
 }
 
 .stat-card::after {
@@ -1510,6 +1511,7 @@ body::after {
   );
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .stat-card:hover::before {
