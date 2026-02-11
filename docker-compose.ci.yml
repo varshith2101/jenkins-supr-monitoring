@@ -115,6 +115,7 @@ services:
     environment:
       - API_BASE_URL=http://nginx
       - JEST_HTML_REPORT_PATH=/reports/jest-report.html
+      - NODE_ENV=test
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - RATE_LIMIT_POINTS=${RATE_LIMIT_POINTS:-20}
@@ -133,7 +134,7 @@ services:
           rm -rf /var/lib/apt/lists/* &&
           node /app/scripts/ci/wait_for_http.js http://nginx/health &&
           cd /app/backend &&
-          npm install &&
+          npm install --include=dev &&
           npm test
 
 volumes:
