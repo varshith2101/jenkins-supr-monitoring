@@ -3,8 +3,15 @@ import { formatStatus, formatDuration, formatTimestamp, getStatusClass } from '.
 function BuildCard({ build, canViewStages, onViewStages, onSelectBuild }) {
   const statusClass = getStatusClass(build.status);
   const statusValue = String(build.status || '').toLowerCase();
-  const isFailedStage = ['failure', 'failed', 'aborted'].includes(statusValue);
+  const isFailureStage = ['failure', 'failed'].includes(statusValue);
+  const isAbortedStage = statusValue === 'aborted';
   const failedStageLabel = build.failedStage || 'Unknown Stage';
+  const detailLabel = isFailureStage ? 'Failed Stage' : isAbortedStage ? 'Result' : 'Duration';
+  const detailValue = isFailureStage
+    ? failedStageLabel
+    : isAbortedStage
+      ? 'Aborted'
+      : formatDuration(build.duration);
 
   return (
     <div
@@ -38,15 +45,17 @@ function BuildCard({ build, canViewStages, onViewStages, onSelectBuild }) {
       )}
       <div className="build-detail">
         <div className="build-detail-label">
-          {isFailedStage ? 'Failed Stage' : 'Duration'}
+          {detailLabel}
         </div>
-        <div className={`build-detail-value${isFailedStage ? ' failed-stage-badge' : ''}`}>
-          {isFailedStage ? failedStageLabel : formatDuration(build.duration)}
+        <div className={`build-detail-value${isFailureStage ? ' failed-stage-badge' : ''}`}>
+          {detailValue}
         </div>
         {canViewStages && (
           <button
             type="button"
             className="view-logs-button"
+            onPointerDown={(event) => event.stopPropagation()}
+            onMouseDown={(event) => event.stopPropagation()}
             onClick={(event) => {
               event.stopPropagation();
               onViewStages?.();

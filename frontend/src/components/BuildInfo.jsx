@@ -4,8 +4,9 @@ import BuildModal from './BuildModal';
 import { formatStatus, formatDuration, getStatusClass } from '../utils/formatters';
 import { jenkinsService } from '../services/jenkinsService';
 
-function BuildInfo({ data, onViewStages }) {
+function BuildInfo({ data, onViewStages, jobName: jobNameProp }) {
   const { builds, lastBuild, jobName } = data;
+  const resolvedJobName = jobNameProp || jobName;
   const [searchBuildNumber, setSearchBuildNumber] = useState('');
   const [selectedBuild, setSelectedBuild] = useState(null);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -19,7 +20,7 @@ function BuildInfo({ data, onViewStages }) {
 
   const handleSearchBuild = async (e) => {
     e.preventDefault();
-    if (!searchBuildNumber || !jobName) return;
+  if (!searchBuildNumber || !resolvedJobName) return;
 
     if (Number(searchBuildNumber) === 696969) {
       setSelectedBuild({
@@ -37,7 +38,7 @@ function BuildInfo({ data, onViewStages }) {
     setSearchError('');
 
     try {
-      const build = await jenkinsService.getBuildByNumber(jobName, searchBuildNumber);
+  const build = await jenkinsService.getBuildByNumber(resolvedJobName, searchBuildNumber);
       setSelectedBuild(build);
       setSearchBuildNumber('');
     } catch (err) {
@@ -51,30 +52,36 @@ function BuildInfo({ data, onViewStages }) {
 
   const statusClass = getStatusClass(lastBuild.status);
 
-  const isFailedStatus = (status) => {
-    if (!status) return false;
-    const normalized = status.toLowerCase();
-    return ['failure', 'failed', 'aborted'].includes(normalized);
-  };
+  const normalizeStatus = (status) => String(status || '').toLowerCase();
 
-  const canViewLogs = (status) => {
-    if (!status) return false;
-    const normalized = status.toLowerCase();
-    return normalized !== 'success';
-  };
+  const isFailureStatus = (status) => ['failure', 'failed'].includes(normalizeStatus(status));
+
+  const isAbortedStatus = (status) => normalizeStatus(status) === 'aborted';
+
+  const canViewStages = (status) => Boolean(status);
 
   const getDurationOrStage = (build) => {
     if (!build) return 'N/A';
-    if (isFailedStatus(build.status)) {
+    if (isFailureStatus(build.status)) {
       return build.failedStage || 'Unknown Stage';
+    }
+    if (isAbortedStatus(build.status)) {
+      return 'Aborted';
     }
     return formatDuration(build.duration);
   };
 
+  const getDurationLabel = (build) => {
+    if (!build) return 'Duration';
+    if (isFailureStatus(build.status)) return 'Failed Stage';
+    if (isAbortedStatus(build.status)) return 'Result';
+    return 'Duration';
+  };
+
   const handleViewStages = (build) => {
-    if (!jobName || !build?.buildNumber) return;
+    if (!resolvedJobName || !build?.buildNumber) return;
     onViewStages?.({
-      jobName,
+      jobName: resolvedJobName,
       build,
     });
   };
@@ -93,7 +100,7 @@ function BuildInfo({ data, onViewStages }) {
             <div className={`status-pill ${statusClass}`}>
               {formatStatus(lastBuild.status)}
             </div>
-            {canViewLogs(lastBuild.status) && (
+            {canViewStages(lastBuild.status) && (
               <button
                 type="button"
                 className="view-logs-button"
@@ -111,10 +118,8 @@ function BuildInfo({ data, onViewStages }) {
           </div>
         )}
         <div className="stat-card">
-          <div className="stat-label">
-            {isFailedStatus(lastBuild.status) ? 'Failed Stage' : 'Duration'}
-          </div>
-          <div className={`stat-value${isFailedStatus(lastBuild.status) ? ' failed-stage-badge' : ''}`}>
+          <div className="stat-label">{getDurationLabel(lastBuild)}</div>
+          <div className={`stat-value${isFailureStatus(lastBuild.status) ? ' failed-stage-badge' : ''}`}>
             {getDurationOrStage(lastBuild)}
           </div>
         </div>
@@ -128,7 +133,7 @@ function BuildInfo({ data, onViewStages }) {
               <BuildCard
                 key={build.buildNumber}
                 build={build}
-                canViewStages={canViewLogs(build.status)}
+                canViewStages={canViewStages(build.status)}
                 onViewStages={() => handleViewStages(build)}
                 onSelectBuild={() => setSelectedBuild(build)}
               />
@@ -158,7 +163,7 @@ function BuildInfo({ data, onViewStages }) {
       {selectedBuild && (
         <BuildModal
           build={selectedBuild}
-          canViewStages={canViewLogs(selectedBuild.status)}
+          canViewStages={canViewStages(selectedBuild.status)}
           onViewStages={() => handleViewStages(selectedBuild)}
           onClose={() => {
             setSelectedBuild(null);

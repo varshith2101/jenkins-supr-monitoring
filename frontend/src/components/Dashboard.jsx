@@ -351,6 +351,7 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
                 {buildData && (
                   <BuildInfo
                     data={buildData}
+                    jobName={selectedJob}
                     onViewStages={handleViewStages}
                   />
                 )}

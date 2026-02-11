@@ -8,8 +8,15 @@ function BuildModal({ build, onClose, onViewStages, canViewStages }) {
 
   const statusClass = getStatusClass(build.status);
   const statusValue = String(build.status || '').toLowerCase();
-  const isFailedStage = ['failure', 'failed', 'aborted'].includes(statusValue);
+  const isFailureStage = ['failure', 'failed'].includes(statusValue);
+  const isAbortedStage = statusValue === 'aborted';
   const failedStageLabel = build.failedStage || 'Unknown Stage';
+  const detailLabel = isFailureStage ? 'Failed Stage' : isAbortedStage ? 'Result' : 'Duration';
+  const detailValue = isFailureStage
+    ? failedStageLabel
+    : isAbortedStage
+      ? 'Aborted'
+      : formatDuration(build.duration);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -52,11 +59,9 @@ function BuildModal({ build, onClose, onViewStages, canViewStages }) {
               )}
 
               <div className="build-modal-stat">
-                <div className="build-modal-label">
-                  {isFailedStage ? 'Failed Stage' : 'Duration'}
-                </div>
-                <div className={`build-modal-value${isFailedStage ? ' failed-stage-badge' : ''}`}>
-                  {isFailedStage ? failedStageLabel : formatDuration(build.duration)}
+                <div className="build-modal-label">{detailLabel}</div>
+                <div className={`build-modal-value${isFailureStage ? ' failed-stage-badge' : ''}`}>
+                  {detailValue}
                 </div>
               </div>
 

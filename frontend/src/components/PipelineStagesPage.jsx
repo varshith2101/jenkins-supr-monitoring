@@ -84,10 +84,13 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
     return stageNodes;
   }, [stageData]);
 
+  const buildStatusValue = String(build?.status || '').toLowerCase();
+  const isFailure = ['failed', 'failure'].includes(buildStatusValue);
+
   const failedStageIndex = useMemo(() => {
-    if (!stageData?.failedStage) return -1;
+    if (!stageData?.failedStage || !isFailure) return -1;
     return graphData.findIndex((stage) => stage.name === stageData.failedStage);
-  }, [graphData, stageData?.failedStage]);
+  }, [graphData, stageData?.failedStage, isFailure]);
 
   useLayoutEffect(() => {
     if (
@@ -255,9 +258,7 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
   };
 
   const steps = stageData?.steps || [];
-  const failedStageName = stageData?.failedStage;
-  const isAborted = String(build?.status || '').toLowerCase() === 'aborted';
-  const failedStagePrefix = isAborted ? 'Aborted' : 'Failed';
+  const failedStageName = isFailure ? stageData?.failedStage : null;
 
   return (
     <div className="pipeline-stages-view">
@@ -276,7 +277,7 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
           {formatStatus(build?.status)}
         </div>
         {failedStageName && (
-          <div className="failed-stage-chip">{failedStagePrefix} at {failedStageName}</div>
+          <div className="failed-stage-chip">Failed at {failedStageName}</div>
         )}
       </div>
 
@@ -291,24 +292,26 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
         <>
           {renderGraph()}
 
-          <div className="pipeline-steps-section">
-            <h3>Failed Stage Steps</h3>
-            {steps.length === 0 ? (
-              <div className="muted-card">No step logs available for this stage.</div>
-            ) : (
-              <div className="pipeline-steps-list">
-                {steps.map((step, index) => (
-                  <details key={`${step.name}-${index}`} className="pipeline-step">
-                    <summary>
-                      <span className="pipeline-step-name">{step.name}</span>
-                      <span className={`pipeline-step-status ${step.status}`}> {step.status}</span>
-                    </summary>
-                    <pre className="pipeline-step-logs">{step.logs}</pre>
-                  </details>
-                ))}
-              </div>
-            )}
-          </div>
+          {isFailure && (
+            <div className="pipeline-steps-section">
+              <h3>Failed Stage Steps</h3>
+              {steps.length === 0 ? (
+                <div className="muted-card">No step logs available for this stage.</div>
+              ) : (
+                <div className="pipeline-steps-list">
+                  {steps.map((step, index) => (
+                    <details key={`${step.name}-${index}`} className="pipeline-step">
+                      <summary>
+                        <span className="pipeline-step-name">{step.name}</span>
+                        <span className={`pipeline-step-status ${step.status}`}> {step.status}</span>
+                      </summary>
+                      <pre className="pipeline-step-logs">{step.logs}</pre>
+                    </details>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
 
