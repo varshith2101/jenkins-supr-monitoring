@@ -101,6 +101,8 @@ services:
     networks:
       - devops_network
     restart: unless-stopped
+    ports:
+      - "5111:80"
 
   test_runner:
     image: node:18-alpine
