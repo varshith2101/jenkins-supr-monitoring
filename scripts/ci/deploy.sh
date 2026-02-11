@@ -2,29 +2,43 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-
-COMPOSE_FILE_OVERRIDE="${COMPOSE_FILE_OVERRIDE:-docker-compose.ci.yml}"
-export COMPOSE_FILE_OVERRIDE
+cd "$ROOT_DIR"
 
 if [ -z "${COMPOSE_PROJECT_NAME:-}" ]; then
   echo "[ERROR] COMPOSE_PROJECT_NAME is not set."
   exit 1
 fi
 
-OS_NAME="$(uname -s)"
+COMPOSE_FILE="${COMPOSE_FILE_OVERRIDE:-docker-compose.ci.yml}"
 
-if [ "$OS_NAME" = "Darwin" ]; then
-  REBUILD_SCRIPT="$ROOT_DIR/mac_env/rebuild_dev.sh"
+# -------------------------------------------------
+# Detect docker compose
+# -------------------------------------------------
+if docker compose version >/dev/null 2>&1; then
+  DC="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+  DC="docker-compose"
 else
-  REBUILD_SCRIPT="$ROOT_DIR/scripts/rebuild_dev.sh"
-fi
-
-if [ ! -f "$REBUILD_SCRIPT" ]; then
-  echo "[ERROR] Rebuild script not found: $REBUILD_SCRIPT"
+  echo "[ERROR] Docker Compose not available."
   exit 1
 fi
 
-cd "$ROOT_DIR"
+echo "[INFO] Using project: $COMPOSE_PROJECT_NAME"
+echo "[INFO] Using compose file: $COMPOSE_FILE"
 
-bash "$REBUILD_SCRIPT"
+# -------------------------------------------------
+# 🔥 Always clean previous stack
+# -------------------------------------------------
+echo "[INFO] Stopping previous CI stack (if exists)..."
+$DC -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" down --remove-orphans || true
 
+# Optional: remove volumes (uncomment if needed)
+# $DC -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" down -v --remove-orphans || true
+
+# -------------------------------------------------
+# 🚀 Start fresh stack
+# -------------------------------------------------
+echo "[INFO] Starting fresh CI stack..."
+$DC -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" up -d --build
+
+echo "[SUCCESS] Deployment complete."
