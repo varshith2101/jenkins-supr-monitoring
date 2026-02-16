@@ -33,7 +33,6 @@ function BuildLogsModal({ build, logs, command, loading, error, onClose }) {
         </div>
 
         <div className="modal-footer">
-          <button className="secondary-button" onClick={onClose}>Close</button>
         </div>
       </div>
     </div>

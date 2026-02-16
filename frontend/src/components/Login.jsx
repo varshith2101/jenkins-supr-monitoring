@@ -104,6 +104,10 @@ function Login({ onLogin }) {
           </div>
         </div>
       </div>
+
+      <footer className="app-footer">
+        Jenkins Monitor · Suprajit Technology Center
+      </footer>
     </div>
   );
 }

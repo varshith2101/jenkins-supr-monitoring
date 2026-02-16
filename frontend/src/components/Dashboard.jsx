@@ -391,6 +391,10 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
           triggering={triggering}
         />
       )}
+
+      <footer className="app-footer">
+        Jenkins Monitor · Suprajit Technology Center
+      </footer>
     </div>
   );
 }

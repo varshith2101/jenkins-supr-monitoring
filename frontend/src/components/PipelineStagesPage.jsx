@@ -280,11 +280,11 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
     const failedRowIndex = failedStageIndex >= 0 ? failedStageIndex + 1 : -1;
     const endRowIndex = stageNodes.length + 1;
     const failureLineStart = failedRowIndex >= 0 ? failedRowIndex * rowHeight + 16 : 0;
-    const failureLineEnd = failedRowIndex >= 0 ? endRowIndex * rowHeight + 16 : 0;
+    const failureLineEnd = failedRowIndex >= 0 ? endRowIndex * rowHeight + 10 : 0;
     const failurePath = failedRowIndex >= 0
-      ? `M 24 ${failureLineStart} C 8 ${failureLineStart}, 8 ${failureLineStart + 14}, 8 ${failureLineStart + 28}`
-        + ` L 8 ${failureLineEnd - 28}`
-        + ` C 8 ${failureLineEnd - 14}, 8 ${failureLineEnd}, 24 ${failureLineEnd}`
+      ? `M 32 ${failureLineStart} C 10 ${failureLineStart}, 10 ${failureLineStart + 16}, 10 ${failureLineStart + 32}`
+        + ` L 10 ${failureLineEnd - 32}`
+        + ` C 10 ${failureLineEnd - 16}, 10 ${failureLineEnd}, 32 ${failureLineEnd}`
       : '';
 
     return (
@@ -299,7 +299,7 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
           {failedRowIndex >= 0 && (
             <svg
               className="pipeline-mobile-failure-svg"
-              viewBox={`0 0 32 ${failureLineEnd + 20}`}
+              viewBox={`0 0 48 ${failureLineEnd + 20}`}
               preserveAspectRatio="none"
               aria-hidden="true"
             >
