@@ -60,6 +60,6 @@ echo "[INFO] Running test container..."
 # -------------------------------------------------
 # Run tests
 # -------------------------------------------------
-$DC -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" run --rm test_runner
+NGINX_PORT="${NGINX_PORT:-5112}" $DC -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" run --rm test_runner
 
 echo "[SUCCESS] Tests completed."
