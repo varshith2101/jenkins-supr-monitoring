@@ -134,7 +134,8 @@ services:
           rm -rf /var/lib/apt/lists/* &&
           node /app/scripts/ci/wait_for_http.js http://nginx/health &&
           cd /app/backend &&
-          npm install --include=dev &&
+          rm -rf /app/backend/node_modules &&
+          npm ci &&
           npm test
 
 volumes:
