@@ -3283,6 +3283,8 @@ body::after {
   /* ---------- Dashboard container ---------- */
   .dashboard-container {
     padding: 1rem 0.75rem;
+    width: 100%;
+    max-width: 100%;
   }
 
   /* ---------- Panel ---------- */
