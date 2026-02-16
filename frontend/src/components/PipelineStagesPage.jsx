@@ -281,6 +281,11 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
     const endRowIndex = stageNodes.length + 1;
     const failureLineStart = failedRowIndex >= 0 ? failedRowIndex * rowHeight + 16 : 0;
     const failureLineEnd = failedRowIndex >= 0 ? endRowIndex * rowHeight + 16 : 0;
+    const failurePath = failedRowIndex >= 0
+      ? `M 8 ${failureLineStart} C 24 ${failureLineStart}, 24 ${failureLineStart + 14}, 24 ${failureLineStart + 28}`
+        + ` L 24 ${failureLineEnd - 28}`
+        + ` C 24 ${failureLineEnd - 14}, 24 ${failureLineEnd}, 8 ${failureLineEnd}`
+      : '';
 
     return (
       <div className="pipeline-graph pipeline-graph-mobile">
@@ -292,7 +297,14 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
           } : undefined}
         >
           {failedRowIndex >= 0 && (
-            <div className="pipeline-mobile-failure-line" aria-hidden="true" />
+            <svg
+              className="pipeline-mobile-failure-svg"
+              viewBox={`0 0 32 ${failureLineEnd + 20}`}
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path className="pipeline-mobile-failure-path" d={failurePath} />
+            </svg>
           )}
           {/* Start node */}
           <div className="pipeline-mobile-node-row">

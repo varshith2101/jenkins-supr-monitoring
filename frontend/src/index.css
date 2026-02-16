@@ -2873,15 +2873,21 @@ body::after {
   transform: translateX(12px);
 }
 
-.pipeline-mobile-failure-line {
+.pipeline-mobile-failure-svg {
   position: absolute;
-  left: 4px;
-  top: var(--failure-start, 0px);
-  height: calc(var(--failure-end, 0px) - var(--failure-start, 0px));
-  width: 3px;
-  background: var(--status-error);
-  border-radius: 999px;
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+  left: -2px;
+  top: 0;
+  width: 32px;
+  height: 100%;
+  pointer-events: none;
+}
+
+.pipeline-mobile-failure-path {
+  fill: none;
+  stroke: var(--status-error);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+  opacity: 0.9;
 }
 
 .pipeline-mobile-node-row {
@@ -3409,6 +3415,8 @@ body::after {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
   }
 
   .login-page {
@@ -3457,16 +3465,23 @@ body::after {
   /* Make left/colored section fill the entire screen */
   .login-logo-section {
     min-height: auto;
-    padding: 2.5rem 1.25rem 1.5rem;
+    padding: 2.25rem 1.5rem 0.75rem;
     align-items: center;
     justify-content: center;
     width: 100%;
+    background: transparent;
+  }
+
+  .login-logo-section::before,
+  .login-logo-section::after {
+    display: none;
   }
 
   .login-logo-content {
     margin-top: 0;
     align-items: center;
     text-align: center;
+    gap: 0.25rem;
   }
 
   .login-logo-content img {
@@ -3486,14 +3501,14 @@ body::after {
     justify-content: center;
     width: 100%;
     flex: 1;
-    padding: 1rem 1.25rem 2.5rem;
+    padding: 1.5rem 1.5rem 2.5rem;
     z-index: 5;
     pointer-events: none;
   }
 
   .login-form-mobile .login-form-container {
     pointer-events: auto;
-    max-width: 400px;
+    max-width: 420px;
     width: 100%;
   }
 
@@ -3503,7 +3518,7 @@ body::after {
   }
 
   .login-form-mobile .login-form {
-    padding: 1.5rem;
+    padding: 1.75rem;
     background: rgba(15, 15, 20, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
