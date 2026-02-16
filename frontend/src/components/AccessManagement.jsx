@@ -88,9 +88,6 @@ function AccessManagement({ user, onLogout, onBack }) {
             </button>
 
             <div className={`user-info ${mobileMenuOpen ? 'mobile-open' : ''}`}>
-              <button className="secondary-button access-button" type="button" onClick={() => { closeMobileMenu(); onBack(); }}>
-                Back to Dashboard
-              </button>
               <div className="profile-menu">
                 <button className="user-chip user-chip-button" type="button">
                   <div className="user-name">{user?.displayName || user?.username}</div>
@@ -102,6 +99,12 @@ function AccessManagement({ user, onLogout, onBack }) {
                   </button>
                 </div>
               </div>
+              <button className="secondary-button access-button" type="button" onClick={() => { closeMobileMenu(); onBack(); }}>
+                Back to Dashboard
+              </button>
+              <button className="secondary-button mobile-logout-button" type="button" onClick={() => { closeMobileMenu(); onLogout(); }}>
+                Logout
+              </button>
             </div>
           </div>
           <p className="dashboard-subtitle">Suprajit Technology Center</p>

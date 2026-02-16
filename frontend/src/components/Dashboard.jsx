@@ -242,11 +242,6 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
             </button>
 
             <div className={`user-info ${mobileMenuOpen ? 'mobile-open' : ''}`}>
-              {user?.role === 'admin' && (
-                <button className="secondary-button access-button" type="button" onClick={() => { closeMobileMenu(); onAccessManagement(); }}>
-                  Access Management
-                </button>
-              )}
               <div className="profile-menu">
                 <button className="user-chip user-chip-button" type="button">
                   <div className="user-name">{user?.displayName || user?.username}</div>
@@ -258,6 +253,14 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
                   </button>
                 </div>
               </div>
+              {user?.role === 'admin' && (
+                <button className="secondary-button access-button" type="button" onClick={() => { closeMobileMenu(); onAccessManagement(); }}>
+                  Access Management
+                </button>
+              )}
+              <button className="secondary-button mobile-logout-button" type="button" onClick={() => { closeMobileMenu(); onLogout(); }}>
+                Logout
+              </button>
             </div>
           </div>
           <p className="dashboard-subtitle">Suprajit Technology Center</p>

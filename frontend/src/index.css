@@ -1049,6 +1049,10 @@ body::after {
   justify-content: flex-end;
 }
 
+.mobile-logout-button {
+  display: none;
+}
+
 .access-button {
   padding: 0.75rem 1.5rem;
   font-size: 0.9rem;
@@ -1643,7 +1647,7 @@ body::after {
   display: grid;
   gap: 1.5rem;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .pipeline-stages-view .panel {
@@ -2464,6 +2468,7 @@ body::after {
   width: 100%;
   max-height: 90vh;
   overflow: hidden;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   animation: slideInDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2524,6 +2529,7 @@ body::after {
 .modal-body {
   padding: 1.5rem;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
   min-height: 0;
 }
@@ -2600,6 +2606,7 @@ body::after {
 
 .logs-modal {
   max-width: 800px;
+  overflow-x: hidden;
 }
 
 .logs-command-row {
@@ -2608,6 +2615,7 @@ body::after {
   gap: 1rem;
   align-items: start;
   margin-bottom: 1.5rem;
+  min-width: 0;
 }
 
 .logs-command-label {
@@ -2626,6 +2634,11 @@ body::after {
   border-radius: 0.75rem;
   border: 1px solid var(--border-default);
   color: var(--text-primary);
+  max-width: 100%;
+  overflow-x: hidden;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .logs-output {
@@ -2639,7 +2652,10 @@ body::after {
   line-height: 1.5;
   max-height: 50vh;
   overflow: auto;
+  overflow-x: hidden;
   white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .logs-loading {
@@ -2781,8 +2797,8 @@ body::after {
 .hamburger-toggle {
   display: none;
   appearance: none;
-  background: transparent;
-  border: none;
+  background: rgba(20, 20, 25, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   cursor: pointer;
   width: 36px;
   height: 36px;
@@ -2793,6 +2809,16 @@ body::after {
   padding: 4px;
   z-index: 1010;
   position: relative;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(0, 82, 204, 0.25);
+  border-radius: 0.75rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hamburger-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35), 0 0 24px rgba(0, 82, 204, 0.35);
 }
 
 .hamburger-toggle span {
@@ -3116,6 +3142,7 @@ body::after {
     position: relative;
     z-index: 1010;
     pointer-events: auto;
+    order: 2;
   }
 
   /* Profile menu — flat layout in mobile menu */
@@ -3125,6 +3152,7 @@ body::after {
     flex-direction: column;
     gap: 0.5rem;
     pointer-events: auto;
+    order: 1;
   }
 
   /* Profile menu hover dropdown — always visible in mobile menu */
@@ -3152,7 +3180,7 @@ body::after {
     box-shadow: none;
     padding: 0;
     min-width: auto;
-    display: block;
+    display: none;
   }
 
   .user-info .profile-dropdown .logout-button {
@@ -3165,7 +3193,16 @@ body::after {
     pointer-events: auto;
     position: relative;
     z-index: 1010;
+    display: none;
+  }
+
+  .user-info .mobile-logout-button {
+    width: 100%;
     display: block;
+    text-align: center;
+    border-color: var(--status-error);
+    color: var(--status-error);
+    order: 3;
   }
 
   .user-info .profile-dropdown .logout-button:hover {
