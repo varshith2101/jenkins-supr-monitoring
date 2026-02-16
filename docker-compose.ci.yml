@@ -140,7 +140,7 @@ services:
           npm config set fetch-retries 5 --global &&
           npm config set fetch-retry-mintimeout 20000 --global &&
           npm config set fetch-retry-maxtimeout 120000 --global &&
-          npm ci --prefer-online --no-audit --no-fund &&
+          npm ci --include=dev --prefer-online --no-audit --no-fund &&
           npm test
 
 volumes:

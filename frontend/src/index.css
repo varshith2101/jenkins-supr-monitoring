@@ -61,6 +61,7 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   background: var(--bg-base);
@@ -111,6 +112,7 @@ body::after {
   min-height: 100vh;
   position: relative;
   z-index: 10;
+  overflow-x: hidden;
 }
 
 
@@ -931,6 +933,7 @@ body::after {
   position: relative;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 .dashboard-header {

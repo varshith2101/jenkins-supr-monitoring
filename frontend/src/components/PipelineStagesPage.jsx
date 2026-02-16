@@ -226,13 +226,17 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
       const svgWidth = 48;
       const svgStartX = startX - svgOffsetX;
       const svgEndX = endX - svgOffsetX;
-      const bendX = Math.max(8, Math.min(svgStartX - 18, svgWidth - 8));
+      const curveDepth = 24;
+      const sideX = Math.max(6, Math.min(svgStartX, svgEndX) - 18);
+      const safeEndY = Math.max(startY + curveDepth * 2, endY);
 
       const path = `M ${svgStartX} ${startY}`
-        + ` C ${bendX} ${startY}, ${bendX} ${endY}, ${svgEndX} ${endY}`;
+        + ` C ${sideX} ${startY}, ${sideX} ${startY + curveDepth}, ${sideX} ${startY + curveDepth * 2}`
+        + ` L ${sideX} ${safeEndY - curveDepth * 2}`
+        + ` C ${sideX} ${safeEndY - curveDepth}, ${sideX} ${safeEndY}, ${svgEndX} ${safeEndY}`;
 
-      setMobileFailureBox({ width: svgWidth, height: trackRect.height });
-      setMobileFailurePath(path);
+  setMobileFailureBox({ width: svgWidth, height: trackRect.height });
+  setMobileFailurePath(path);
     };
 
     updatePath();
