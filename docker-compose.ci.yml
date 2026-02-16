@@ -134,7 +134,8 @@ services:
           rm -rf /var/lib/apt/lists/* &&
           node /app/scripts/ci/wait_for_http.js http://nginx/health &&
           cd /app/backend &&
-          rm -rf /app/backend/node_modules /root/.npm /tmp/npm-cache &&
+          if [ -d /app/backend/node_modules ]; then find /app/backend/node_modules -mindepth 1 -exec rm -rf {} + || true; fi &&
+          rm -rf /root/.npm /tmp/npm-cache || true &&
           npm cache clean --force &&
           npm config set cache /tmp/npm-cache --global &&
           npm config set fetch-retries 5 --global &&
