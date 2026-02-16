@@ -1223,8 +1223,9 @@ body::after {
 }
 
 .app-footer {
-  margin-top: 2rem;
-  padding: 0.85rem 1rem 1rem;
+  margin-top: 1.25rem;
+  padding: 0.6rem 1rem 0.75rem;
+  line-height: 1.3;
   text-align: center;
   color: var(--text-muted);
   font-size: 0.75rem;
@@ -2314,15 +2315,18 @@ body::after {
 .user-actions details {
   position: relative;
   max-width: 100%;
+  width: 100%;
 }
 
 .user-actions details[open] {
   flex-basis: 100%;
+  width: 100%;
 }
 
 .user-actions details summary {
   cursor: pointer;
   list-style: none;
+  width: 100%;
 }
 
 .user-actions details summary::-webkit-details-marker {
@@ -2380,29 +2384,33 @@ body::after {
 }
 
 .user-actions .pipeline-list {
-  position: absolute;
-  z-index: 10;
-  min-width: 240px;
-  max-width: calc(100vw - 3rem);
+  position: static;
+  z-index: auto;
+  width: 100%;
+  max-width: 100%;
   margin-top: 0.5rem;
+  padding: 0.85rem;
+  max-height: min(240px, 40vh);
+  overflow-y: auto;
   box-shadow: var(--shadow-md);
   border-color: var(--border-default);
 }
 
 .user-actions .pipeline-checkbox--fancy {
-  padding-left: 1.6rem;
+  padding-left: 1.4rem;
   font-size: 0.85rem;
+  line-height: 1.2;
 }
 
 .user-actions .pipeline-checkbox--fancy .pipeline-check {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
 }
 
 .user-actions .pipeline-checkbox--fancy input:checked + .pipeline-check::after {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 2px;
 }
 
