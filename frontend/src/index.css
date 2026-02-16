@@ -1223,8 +1223,8 @@ body::after {
 }
 
 .app-footer {
-  margin-top: 2.5rem;
-  padding: 1.5rem 1rem 2rem;
+  margin-top: 2rem;
+  padding: 0.85rem 1rem 1rem;
   text-align: center;
   color: var(--text-muted);
   font-size: 0.75rem;
@@ -2389,6 +2389,23 @@ body::after {
   border-color: var(--border-default);
 }
 
+.user-actions .pipeline-checkbox--fancy {
+  padding-left: 1.6rem;
+  font-size: 0.85rem;
+}
+
+.user-actions .pipeline-checkbox--fancy .pipeline-check {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.user-actions .pipeline-checkbox--fancy input:checked + .pipeline-check::after {
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+}
+
 .pipeline-checkbox {
   display: flex;
   align-items: center;
@@ -3449,6 +3466,8 @@ body::after {
     min-width: auto;
     max-width: 100%;
     margin-top: 0.5rem;
+    max-height: min(240px, 40vh);
+    overflow-y: auto;
   }
 
   /* ---------- Login – full colored background ---------- */
