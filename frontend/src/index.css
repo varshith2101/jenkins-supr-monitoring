@@ -3394,6 +3394,9 @@ body::after {
     grid-template-columns: 1fr;
     min-height: 100vh;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .login-container::after {
@@ -3402,14 +3405,17 @@ body::after {
 
   /* Make left/colored section fill the entire screen */
   .login-logo-section {
-    min-height: 100vh;
-    padding: 2.5rem 1.25rem 1rem;
+    min-height: auto;
+    padding: 2.5rem 1.25rem 1.5rem;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
+    width: 100%;
   }
 
   .login-logo-content {
-    margin-top: 2rem;
+    margin-top: 0;
+    align-items: center;
+    text-align: center;
   }
 
   .login-logo-content img {
@@ -3424,15 +3430,12 @@ body::after {
   /* Show the mobile form inside the colored section */
   .login-form-mobile {
     display: flex;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    position: relative;
     align-items: center;
     justify-content: center;
-    padding: 0 1.25rem;
-    padding-top: 38vh;
+    width: 100%;
+    flex: 1;
+    padding: 1rem 1.25rem 2.5rem;
     z-index: 5;
     pointer-events: none;
   }
@@ -3542,7 +3545,7 @@ body::after {
   }
 
   .login-form-mobile {
-    padding-top: 35vh;
+    padding-top: 1rem;
   }
 
   .dashboard-subtitle {
