@@ -33,6 +33,7 @@ function Login({ onLogin }) {
   return (
     <div className="login-page">
       <div className="login-container">
+        {/* Left / top colored section */}
         <div className="login-logo-section">
           <div className="login-logo-content">
             <img src={logo} alt="Suprajit Logo" />
@@ -40,32 +41,65 @@ function Login({ onLogin }) {
             <p className="login-subtitle">Controlled Access</p>
           </div>
         </div>
+
+        {/* Right section (desktop only — hidden on mobile) */}
         <div className="login-form-section">
           <div className="login-form-container">
             <h2 className="login-form-title">Login</h2>
             <form className="login-form" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <button type="submit" className="login-button" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-          </form>
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <button type="submit" className="login-button" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
+              </button>
+            </form>
+            {error && <div className="error-message">{error}</div>}
+          </div>
+        </div>
+
+        {/* Mobile-only login form — rendered inside the colored section */}
+        <div className="login-form-mobile">
+          <div className="login-form-container">
+            <h2 className="login-form-title">Login</h2>
+            <form className="login-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <button type="submit" className="login-button" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
+              </button>
+            </form>
             {error && <div className="error-message">{error}</div>}
           </div>
         </div>

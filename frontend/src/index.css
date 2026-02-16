@@ -704,6 +704,10 @@ body::after {
     0 0 60px var(--accent-glow);
 }
 
+/* Mobile-only login form – hidden on desktop */
+.login-form-mobile {
+  display: none;
+}
 
 .form-group {
   margin-bottom: 1.25rem;
@@ -1638,6 +1642,8 @@ body::after {
 .pipeline-stages-view {
   display: grid;
   gap: 1.5rem;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .pipeline-stages-view .panel {
@@ -1925,6 +1931,8 @@ body::after {
 .pipeline-steps-section {
   display: grid;
   gap: 1rem;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .pipeline-steps-section h3 {
@@ -1935,6 +1943,8 @@ body::after {
 .pipeline-steps-list {
   display: grid;
   gap: 0.75rem;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .pipeline-step {
@@ -1942,6 +1952,8 @@ body::after {
   border-radius: 0.75rem;
   background: var(--bg-elevated);
   padding: 0.5rem 0.75rem;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .pipeline-step summary {
@@ -1986,6 +1998,9 @@ body::after {
   max-height: 280px;
   overflow: auto;
   white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 
 .build-detail {
@@ -2454,6 +2469,15 @@ body::after {
   animation: slideInDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* When a form wraps header + body + footer, it must also flex-column */
+.modal-content > form {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
 .modal-header {
   padding: 1.5rem;
   border-bottom: 2px solid var(--border-default);
@@ -2461,6 +2485,7 @@ body::after {
   align-items: center;
   justify-content: space-between;
   background: linear-gradient(135deg, rgba(0, 82, 204, 0.1), rgba(0, 168, 216, 0.05));
+  flex-shrink: 0;
 }
 
 .modal-header h2 {
@@ -2500,6 +2525,7 @@ body::after {
   padding: 1.5rem;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
 }
 
 .modal-footer {
@@ -2509,6 +2535,7 @@ body::after {
   gap: 1rem;
   justify-content: flex-end;
   background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 .modal-footer .secondary-button,
@@ -2815,6 +2842,8 @@ body::after {
   gap: 0;
   position: relative;
   padding: 0 0.5rem;
+  max-width: 360px;
+  margin: 0 auto;
 }
 
 .pipeline-mobile-node-row {
@@ -2842,14 +2871,9 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   transition: all 0.25s ease;
   flex-shrink: 0;
   position: relative;
-}
-
-.pipeline-mobile-dot:active {
-  transform: scale(1.15);
 }
 
 .pipeline-mobile-dot-index {
@@ -2960,81 +2984,48 @@ body::after {
   letter-spacing: 0.08em;
 }
 
-/* Tooltip that appears on tap */
-.pipeline-mobile-tooltip {
+/* Always-visible stage info on mobile */
+.pipeline-mobile-stage-info {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-default);
-  border-radius: 0.6rem;
-  box-shadow: var(--shadow-md);
-  opacity: 0;
-  transform: translateX(-8px);
-  max-height: 0;
-  overflow: hidden;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
+  gap: 0.1rem;
+  min-width: 0;
 }
 
-.pipeline-mobile-tooltip.visible {
-  opacity: 1;
-  transform: translateX(0);
-  max-height: 80px;
-  pointer-events: auto;
-}
-
-.pipeline-mobile-tooltip.success {
-  border-color: rgba(16, 185, 129, 0.35);
-}
-
-.pipeline-mobile-tooltip.failure {
-  border-color: rgba(239, 68, 68, 0.35);
-}
-
-.pipeline-mobile-tooltip.warning {
-  border-color: rgba(245, 158, 11, 0.35);
-}
-
-.pipeline-mobile-tooltip.in-progress {
-  border-color: rgba(85, 136, 255, 0.35);
-}
-
-.pipeline-mobile-tooltip-name {
-  font-size: 0.82rem;
+.pipeline-mobile-stage-name {
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.3;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
-.pipeline-mobile-tooltip-status {
+.pipeline-mobile-stage-status {
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
-.pipeline-mobile-tooltip-status.success {
+.pipeline-mobile-stage-status.success {
   color: var(--status-success);
 }
 
-.pipeline-mobile-tooltip-status.failure {
+.pipeline-mobile-stage-status.failure {
   color: var(--status-error);
 }
 
-.pipeline-mobile-tooltip-status.warning {
+.pipeline-mobile-stage-status.warning {
   color: var(--status-warning);
 }
 
-.pipeline-mobile-tooltip-status.in-progress {
+.pipeline-mobile-stage-status.in-progress {
   color: var(--primary-bright);
 }
 
-.pipeline-mobile-tooltip-status.skipped,
-.pipeline-mobile-tooltip-status.unknown {
+.pipeline-mobile-stage-status.skipped,
+.pipeline-mobile-stage-status.unknown {
   color: var(--text-muted);
 }
 
@@ -3117,13 +3108,26 @@ body::after {
     display: flex;
   }
 
+  /* Access Management / Back button — must be tappable */
   .user-info .secondary-button.access-button {
     width: 100%;
     text-align: center;
+    position: relative;
+    z-index: 1010;
+    pointer-events: auto;
   }
 
+  /* Profile menu — flat layout in mobile menu */
   .user-info .profile-menu {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Profile menu hover dropdown — always visible in mobile menu */
+  .user-info .profile-menu::after {
+    display: none;
   }
 
   .user-info .user-chip {
@@ -3131,6 +3135,8 @@ body::after {
     display: flex;
     justify-content: space-between;
     border-radius: 0.75rem;
+    pointer-events: none;
+    cursor: default;
   }
 
   .user-info .profile-dropdown {
@@ -3138,7 +3144,7 @@ body::after {
     opacity: 1;
     transform: none;
     pointer-events: auto;
-    margin-top: 0.5rem;
+    margin-top: 0;
     background: transparent;
     border: none;
     box-shadow: none;
@@ -3153,6 +3159,9 @@ body::after {
     border-color: var(--status-error);
     color: var(--status-error);
     border-radius: 0.5rem;
+    pointer-events: auto;
+    position: relative;
+    z-index: 1010;
   }
 
   .user-info .profile-dropdown .logout-button:hover {
@@ -3298,6 +3307,24 @@ body::after {
     font-size: 1rem;
   }
 
+  /* ---------- Pipeline step logs ---------- */
+  .pipeline-step-logs {
+    font-size: 0.7rem;
+    max-height: 220px;
+  }
+
+  .pipeline-step summary {
+    gap: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .pipeline-step-name {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    min-width: 0;
+    flex: 1;
+  }
+
   /* ---------- User management ---------- */
   .user-row {
     flex-direction: column;
@@ -3320,32 +3347,70 @@ body::after {
     margin-top: 0.5rem;
   }
 
-  /* ---------- Login ---------- */
+  /* ---------- Login – full colored background ---------- */
   .login-container {
     grid-template-columns: 1fr;
-    min-height: auto;
+    min-height: 100vh;
+    position: relative;
   }
 
   .login-container::after {
     display: none;
   }
 
+  /* Make left/colored section fill the entire screen */
   .login-logo-section {
-    min-height: 35vh;
-    padding: 2rem 1.25rem;
+    min-height: 100vh;
+    padding: 2.5rem 1.25rem 1rem;
+    align-items: center;
+    justify-content: flex-start;
   }
 
+  .login-logo-content {
+    margin-top: 2rem;
+  }
+
+  .login-logo-content img {
+    max-width: 180px;
+  }
+
+  /* Hide the desktop right-side form section */
   .login-form-section {
-    min-height: auto;
-    padding: 2rem 1.25rem;
+    display: none;
   }
 
-  .login-form-container {
-    max-width: 100%;
+  /* Show the mobile form inside the colored section */
+  .login-form-mobile {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.25rem;
+    padding-top: 38vh;
+    z-index: 5;
+    pointer-events: none;
   }
 
-  .login-form {
+  .login-form-mobile .login-form-container {
+    pointer-events: auto;
+    max-width: 400px;
+    width: 100%;
+  }
+
+  .login-form-mobile .login-form-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .login-form-mobile .login-form {
     padding: 1.5rem;
+    background: rgba(15, 15, 20, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
   /* ---------- Modals ---------- */
@@ -3427,11 +3492,15 @@ body::after {
   }
 
   .login-container img {
-    max-width: 200px;
+    max-width: 160px;
   }
 
   .login-container h1 {
     font-size: 1.5rem;
+  }
+
+  .login-form-mobile {
+    padding-top: 35vh;
   }
 
   .dashboard-subtitle {

@@ -43,7 +43,6 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
   const endDotRef = useRef(null);
   const [failurePath, setFailurePath] = useState('');
   const [failureBox, setFailureBox] = useState({ width: 0, height: 0 });
-  const [tappedStage, setTappedStage] = useState(null);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -277,10 +276,6 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
       stageIndex: index,
     }));
 
-    const handleTap = (index) => {
-      setTappedStage((prev) => (prev === index ? null : index));
-    };
-
     return (
       <div className="pipeline-graph pipeline-graph-mobile">
         <div className="pipeline-mobile-track">
@@ -296,32 +291,24 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
           </div>
 
           {stageNodes.map((stage, index) => {
-            const isTapped = tappedStage === index;
             const nextStatus = index < stageNodes.length - 1
               ? stageNodes[index + 1].normalizedStatus
               : 'skipped';
             const isLast = index === stageNodes.length - 1;
-            const isFailed = stage.normalizedStatus === 'failure';
 
             return (
               <div key={`${stage.name}-${index}`} className="pipeline-mobile-node-row">
                 <div className="pipeline-mobile-node-col">
-                  <div
-                    className={`pipeline-mobile-dot ${stage.normalizedStatus}`}
-                    onClick={() => handleTap(index)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTap(index); } }}
-                  >
+                  <div className={`pipeline-mobile-dot ${stage.normalizedStatus}`}>
                     <span className="pipeline-mobile-dot-index">{index + 1}</span>
                   </div>
                   {!isLast && <div className={`pipeline-mobile-segment ${nextStatus}`} />}
                   {isLast && <div className="pipeline-mobile-segment skipped" />}
                 </div>
                 <div className="pipeline-mobile-label-col">
-                  <div className={`pipeline-mobile-tooltip ${isTapped ? 'visible' : ''} ${stage.normalizedStatus}`}>
-                    <span className="pipeline-mobile-tooltip-name">{stage.name}</span>
-                    <span className={`pipeline-mobile-tooltip-status ${stage.normalizedStatus}`}>
+                  <div className={`pipeline-mobile-stage-info ${stage.normalizedStatus}`}>
+                    <span className="pipeline-mobile-stage-name">{stage.name}</span>
+                    <span className={`pipeline-mobile-stage-status ${stage.normalizedStatus}`}>
                       {stage.normalizedStatus === 'success' ? '✓ Passed'
                         : stage.normalizedStatus === 'failure' ? '✗ Failed'
                         : stage.normalizedStatus === 'warning' ? '⚠ Aborted'
