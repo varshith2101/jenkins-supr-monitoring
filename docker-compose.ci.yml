@@ -101,8 +101,6 @@ services:
     networks:
       - devops_network
     restart: unless-stopped
-    ports:
-      - "5111:80"
 
   test_runner:
     image: node:18-bullseye-slim
@@ -134,8 +132,13 @@ services:
           rm -rf /var/lib/apt/lists/* &&
           node /app/scripts/ci/wait_for_http.js http://nginx/health &&
           cd /app/backend &&
-          rm -rf /app/backend/node_modules &&
-          npm ci &&
+          rm -rf /app/backend/node_modules /root/.npm /tmp/npm-cache &&
+          npm cache clean --force &&
+          npm config set cache /tmp/npm-cache --global &&
+          npm config set fetch-retries 5 --global &&
+          npm config set fetch-retry-mintimeout 20000 --global &&
+          npm config set fetch-retry-maxtimeout 120000 --global &&
+          npm ci --prefer-online --no-audit --no-fund &&
           npm test
 
 volumes:
