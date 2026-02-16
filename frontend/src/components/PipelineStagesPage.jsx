@@ -282,9 +282,9 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
     const failureLineStart = failedRowIndex >= 0 ? failedRowIndex * rowHeight + 16 : 0;
     const failureLineEnd = failedRowIndex >= 0 ? endRowIndex * rowHeight + 16 : 0;
     const failurePath = failedRowIndex >= 0
-      ? `M 8 ${failureLineStart} C 24 ${failureLineStart}, 24 ${failureLineStart + 14}, 24 ${failureLineStart + 28}`
-        + ` L 24 ${failureLineEnd - 28}`
-        + ` C 24 ${failureLineEnd - 14}, 24 ${failureLineEnd}, 8 ${failureLineEnd}`
+      ? `M 24 ${failureLineStart} C 8 ${failureLineStart}, 8 ${failureLineStart + 14}, 8 ${failureLineStart + 28}`
+        + ` L 8 ${failureLineEnd - 28}`
+        + ` C 8 ${failureLineEnd - 14}, 8 ${failureLineEnd}, 24 ${failureLineEnd}`
       : '';
 
     return (
