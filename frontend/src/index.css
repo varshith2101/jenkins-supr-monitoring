@@ -2420,140 +2420,6 @@ body::after {
   font-size: 0.875rem;
 }
 
-/* Responsive Improvements */
-@media (max-width: 1024px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .login-container {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-
-  .login-container::after {
-    display: none;
-  }
-
-  .login-logo-section {
-    min-height: 40vh;
-    padding: 3rem 1.5rem;
-  }
-
-  .login-form-section {
-    min-height: 60vh;
-    padding: 3rem 1.5rem;
-  }
-
-  .login-logo-content img {
-    max-width: 200px;
-  }
-
-  .login-form-container {
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-header-content {
-    flex-direction: column;
-  }
-
-  .user-info {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .job-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .job-actions button {
-    width: 100%;
-  }
-
-  .current-build {
-    grid-template-columns: 1fr;
-  }
-
-  .build-card {
-    grid-template-columns: 1fr;
-  }
-
-  .user-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .user-actions {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .user-actions details {
-    width: 100%;
-  }
-
-  .user-actions details[open] {
-    flex-basis: 100%;
-  }
-
-  .user-actions .pipeline-list {
-    position: static;
-    min-width: auto;
-    max-width: 100%;
-    margin-top: 0.5rem;
-  }
-
-  .panel {
-    padding: 1.25rem;
-  }
-
-  .login-container {
-    padding: 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .user-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .user-actions select,
-  .user-actions button,
-  .user-actions details {
-    width: 100%;
-  }
-
-  .user-actions select {
-    min-width: 0;
-  }
-
-  .ghost-button {
-    padding: 0.625rem 1rem;
-    font-size: 0.8125rem;
-  }
-
-  .login-container {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-
-  .login-container img {
-    max-width: 250px;
-  }
-
-  .login-container h1 {
-    font-size: 1.5rem;
-  }
-}
-
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
@@ -2878,5 +2744,714 @@ body::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* =====================================================
+   HAMBURGER MENU & MOBILE NAVIGATION
+   ===================================================== */
+
+.hamburger-toggle {
+  display: none;
+  appearance: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px;
+  z-index: 1010;
+  position: relative;
+}
+
+.hamburger-toggle span {
+  display: block;
+  width: 24px;
+  height: 2.5px;
+  border-radius: 999px;
+  background: var(--text-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+.hamburger-toggle.open span:nth-child(1) {
+  transform: translateY(7.5px) rotate(45deg);
+}
+
+.hamburger-toggle.open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.hamburger-toggle.open span:nth-child(3) {
+  transform: translateY(-7.5px) rotate(-45deg);
+}
+
+.mobile-menu-overlay {
+  display: none;
+}
+
+/* =====================================================
+   MOBILE PIPELINE STAGES – VERTICAL LAYOUT
+   ===================================================== */
+
+.pipeline-graph-mobile {
+  background: radial-gradient(circle at top, rgba(0, 82, 204, 0.12), transparent 60%),
+    rgba(10, 10, 15, 0.85);
+  border-radius: 1rem;
+  border: 1px solid rgba(0, 82, 204, 0.2);
+  padding: 1.5rem 1rem;
+  box-shadow: var(--shadow-md);
+}
+
+.pipeline-mobile-track {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  position: relative;
+  padding: 0 0.5rem;
+}
+
+.pipeline-mobile-node-row {
+  display: flex;
+  align-items: stretch;
+  min-height: 56px;
+}
+
+.pipeline-mobile-node-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 44px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.pipeline-mobile-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  background: var(--bg-surface);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.pipeline-mobile-dot:active {
+  transform: scale(1.15);
+}
+
+.pipeline-mobile-dot-index {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.pipeline-mobile-dot.start,
+.pipeline-mobile-dot.end {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+  cursor: default;
+}
+
+.pipeline-mobile-dot.start .pipeline-mobile-dot-index,
+.pipeline-mobile-dot.end .pipeline-mobile-dot-index {
+  display: none;
+}
+
+.pipeline-mobile-dot.success {
+  background: var(--status-success);
+  border-color: var(--status-success);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.55);
+}
+
+.pipeline-mobile-dot.failure {
+  background: var(--status-error);
+  border-color: var(--status-error);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.55);
+}
+
+.pipeline-mobile-dot.warning {
+  background: var(--status-warning);
+  border-color: var(--status-warning);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.55);
+}
+
+.pipeline-mobile-dot.in-progress {
+  background: var(--primary-bright);
+  border-color: var(--primary-light);
+  box-shadow: 0 0 12px rgba(85, 136, 255, 0.55);
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.pipeline-mobile-dot.skipped {
+  background: rgba(148, 163, 184, 0.6);
+  border-color: rgba(148, 163, 184, 0.6);
+}
+
+.pipeline-mobile-dot.failure-end {
+  background: rgba(239, 68, 68, 0.9);
+  border-color: rgba(239, 68, 68, 0.9);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5), 0 0 20px rgba(239, 68, 68, 0.35);
+}
+
+.pipeline-mobile-segment {
+  width: 4px;
+  flex: 1;
+  min-height: 24px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.35);
+}
+
+.pipeline-mobile-segment.success {
+  background: var(--status-success);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.35);
+}
+
+.pipeline-mobile-segment.failure {
+  background: var(--status-error);
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.35);
+}
+
+.pipeline-mobile-segment.warning {
+  background: var(--status-warning);
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.35);
+}
+
+.pipeline-mobile-segment.in-progress {
+  background: var(--primary-bright);
+  box-shadow: 0 0 6px rgba(85, 136, 255, 0.35);
+}
+
+/* Label column (right side) */
+.pipeline-mobile-label-col {
+  display: flex;
+  align-items: center;
+  padding-left: 0.75rem;
+  flex: 1;
+  min-height: 32px;
+  min-width: 0;
+}
+
+.pipeline-mobile-label-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.pipeline-mobile-label-text.muted {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Tooltip that appears on tap */
+.pipeline-mobile-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-default);
+  border-radius: 0.6rem;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transform: translateX(-8px);
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.pipeline-mobile-tooltip.visible {
+  opacity: 1;
+  transform: translateX(0);
+  max-height: 80px;
+  pointer-events: auto;
+}
+
+.pipeline-mobile-tooltip.success {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.pipeline-mobile-tooltip.failure {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.pipeline-mobile-tooltip.warning {
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.pipeline-mobile-tooltip.in-progress {
+  border-color: rgba(85, 136, 255, 0.35);
+}
+
+.pipeline-mobile-tooltip-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pipeline-mobile-tooltip-status {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pipeline-mobile-tooltip-status.success {
+  color: var(--status-success);
+}
+
+.pipeline-mobile-tooltip-status.failure {
+  color: var(--status-error);
+}
+
+.pipeline-mobile-tooltip-status.warning {
+  color: var(--status-warning);
+}
+
+.pipeline-mobile-tooltip-status.in-progress {
+  color: var(--primary-bright);
+}
+
+.pipeline-mobile-tooltip-status.skipped,
+.pipeline-mobile-tooltip-status.unknown {
+  color: var(--text-muted);
+}
+
+
+/* =====================================================
+   RESPONSIVE – TABLET (≤ 1024px)
+   ===================================================== */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .login-container {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .login-container::after {
+    display: none;
+  }
+
+  .login-logo-section {
+    min-height: 40vh;
+    padding: 3rem 1.5rem;
+  }
+
+  .login-form-section {
+    min-height: 60vh;
+    padding: 3rem 1.5rem;
+  }
+
+  .login-logo-content img {
+    max-width: 200px;
+  }
+
+  .login-form-container {
+    max-width: 100%;
+  }
+}
+
+
+/* =====================================================
+   RESPONSIVE – MOBILE (≤ 768px)
+   ===================================================== */
+@media (max-width: 768px) {
+
+  /* ---------- Hamburger visible ---------- */
+  .hamburger-toggle {
+    display: flex;
+  }
+
+  .mobile-menu-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  /* ---------- User-info becomes slide-down menu ---------- */
+  .user-info {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-panel);
+    border-bottom: 2px solid var(--border-default);
+    box-shadow: var(--shadow-lg);
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem 1.25rem;
+    gap: 0.75rem;
+    z-index: 1005;
+    animation: fadeInDown 0.25s ease-out;
+  }
+
+  .user-info.mobile-open {
+    display: flex;
+  }
+
+  .user-info .secondary-button.access-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .user-info .profile-menu {
+    width: 100%;
+  }
+
+  .user-info .user-chip {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 0.75rem;
+  }
+
+  .user-info .profile-dropdown {
+    position: static;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    margin-top: 0.5rem;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    min-width: auto;
+  }
+
+  .user-info .profile-dropdown .logout-button {
+    width: 100%;
+    text-align: center;
+    padding: 0.75rem 1rem;
+    border-color: var(--status-error);
+    color: var(--status-error);
+    border-radius: 0.5rem;
+  }
+
+  .user-info .profile-dropdown .logout-button:hover {
+    background: var(--status-error-bg);
+  }
+
+  /* ---------- Dashboard header ---------- */
+  .dashboard-header {
+    padding: 1.5rem 1rem;
+  }
+
+  .dashboard-header-row {
+    position: relative;
+  }
+
+  .dashboard-header-content {
+    gap: 0.75rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: clamp(1rem, 4vw, 1.5rem);
+  }
+
+  .brand-logo {
+    width: clamp(130px, 40vw, 200px);
+  }
+
+  /* ---------- Dashboard container ---------- */
+  .dashboard-container {
+    padding: 1rem 0.75rem;
+  }
+
+  /* ---------- Panel ---------- */
+  .panel {
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  .panel:hover {
+    transform: none;
+  }
+
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .panel-search {
+    width: 100%;
+  }
+
+  .panel-search-input {
+    width: 100%;
+    min-width: unset;
+  }
+
+  /* ---------- Pipeline cards ---------- */
+  .pipeline-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .pipeline-card-action {
+    width: 100%;
+  }
+
+  .pipeline-card-action .secondary-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .pipeline-name {
+    font-size: 1rem;
+  }
+
+  .pipeline-meta-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  /* ---------- Build Info ---------- */
+  .current-build {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    padding: 1.25rem;
+  }
+
+  .stat-card:hover {
+    transform: none;
+  }
+
+  .stat-value {
+    font-size: clamp(1.25rem, 4vw, 1.75rem);
+  }
+
+  /* ---------- Build cards ---------- */
+  .build-card {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .build-card:hover {
+    transform: none;
+  }
+
+  /* ---------- Build search ---------- */
+  .build-search-form {
+    flex-direction: column;
+  }
+
+  .build-search-form .primary-button {
+    width: 100%;
+  }
+
+  /* ---------- Pipeline actions ---------- */
+  .job-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .job-actions button {
+    width: 100%;
+  }
+
+  /* ---------- Pipeline stages header ---------- */
+  .pipeline-stages-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .pipeline-stages-header .primary-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .pipeline-stages-header h2 {
+    font-size: 1rem;
+  }
+
+  /* ---------- User management ---------- */
+  .user-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .user-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .user-actions details {
+    width: 100%;
+  }
+
+  .user-actions .pipeline-list {
+    position: static;
+    min-width: auto;
+    max-width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  /* ---------- Login ---------- */
+  .login-container {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .login-container::after {
+    display: none;
+  }
+
+  .login-logo-section {
+    min-height: 35vh;
+    padding: 2rem 1.25rem;
+  }
+
+  .login-form-section {
+    min-height: auto;
+    padding: 2rem 1.25rem;
+  }
+
+  .login-form-container {
+    max-width: 100%;
+  }
+
+  .login-form {
+    padding: 1.5rem;
+  }
+
+  /* ---------- Modals ---------- */
+  .modal-overlay {
+    padding: 0.5rem;
+    align-items: flex-end;
+  }
+
+  .modal-content {
+    max-height: 85vh;
+    border-radius: 1rem 1rem 0 0;
+    max-width: 100%;
+  }
+
+  .modal-header {
+    padding: 1rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+  }
+
+  .modal-footer .secondary-button,
+  .modal-footer .primary-button {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .build-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .logs-command-row {
+    grid-template-columns: 1fr;
+  }
+
+  .logs-output {
+    max-height: 40vh;
+    font-size: 0.72rem;
+  }
+}
+
+
+/* =====================================================
+   RESPONSIVE – SMALL PHONES (≤ 480px)
+   ===================================================== */
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .user-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-actions select,
+  .user-actions button,
+  .user-actions details {
+    width: 100%;
+  }
+
+  .user-actions select {
+    min-width: 0;
+  }
+
+  .ghost-button {
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  .login-container img {
+    max-width: 200px;
+  }
+
+  .login-container h1 {
+    font-size: 1.5rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .brand-logo {
+    width: clamp(100px, 35vw, 160px);
+  }
+
+  .pipeline-meta-row {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  .pipeline-stages-header h2 {
+    font-size: 0.9rem;
+    word-break: break-word;
   }
 }

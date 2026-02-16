@@ -15,6 +15,18 @@ const STATUS_CLASS_MAP = {
   QUEUED: 'in-progress',
 };
 
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= breakpoint);
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${breakpoint}px)`);
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    setIsMobile(mql.matches);
+    return () => mql.removeEventListener('change', handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
   const [stageData, setStageData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -31,6 +43,8 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
   const endDotRef = useRef(null);
   const [failurePath, setFailurePath] = useState('');
   const [failureBox, setFailureBox] = useState({ width: 0, height: 0 });
+  const [tappedStage, setTappedStage] = useState(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!jobName || !build?.buildNumber) return;
@@ -257,6 +271,83 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
     );
   };
 
+  const renderMobileGraph = () => {
+    const stageNodes = graphData.map((stage, index) => ({
+      ...stage,
+      stageIndex: index,
+    }));
+
+    const handleTap = (index) => {
+      setTappedStage((prev) => (prev === index ? null : index));
+    };
+
+    return (
+      <div className="pipeline-graph pipeline-graph-mobile">
+        <div className="pipeline-mobile-track">
+          {/* Start node */}
+          <div className="pipeline-mobile-node-row">
+            <div className="pipeline-mobile-node-col">
+              <div className="pipeline-mobile-dot skipped start" />
+              {stageNodes.length > 0 && <div className={`pipeline-mobile-segment ${stageNodes[0]?.normalizedStatus || 'skipped'}`} />}
+            </div>
+            <div className="pipeline-mobile-label-col">
+              <span className="pipeline-mobile-label-text muted">Start</span>
+            </div>
+          </div>
+
+          {stageNodes.map((stage, index) => {
+            const isTapped = tappedStage === index;
+            const nextStatus = index < stageNodes.length - 1
+              ? stageNodes[index + 1].normalizedStatus
+              : 'skipped';
+            const isLast = index === stageNodes.length - 1;
+            const isFailed = stage.normalizedStatus === 'failure';
+
+            return (
+              <div key={`${stage.name}-${index}`} className="pipeline-mobile-node-row">
+                <div className="pipeline-mobile-node-col">
+                  <div
+                    className={`pipeline-mobile-dot ${stage.normalizedStatus}`}
+                    onClick={() => handleTap(index)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTap(index); } }}
+                  >
+                    <span className="pipeline-mobile-dot-index">{index + 1}</span>
+                  </div>
+                  {!isLast && <div className={`pipeline-mobile-segment ${nextStatus}`} />}
+                  {isLast && <div className="pipeline-mobile-segment skipped" />}
+                </div>
+                <div className="pipeline-mobile-label-col">
+                  <div className={`pipeline-mobile-tooltip ${isTapped ? 'visible' : ''} ${stage.normalizedStatus}`}>
+                    <span className="pipeline-mobile-tooltip-name">{stage.name}</span>
+                    <span className={`pipeline-mobile-tooltip-status ${stage.normalizedStatus}`}>
+                      {stage.normalizedStatus === 'success' ? '✓ Passed'
+                        : stage.normalizedStatus === 'failure' ? '✗ Failed'
+                        : stage.normalizedStatus === 'warning' ? '⚠ Aborted'
+                        : stage.normalizedStatus === 'in-progress' ? '● Running'
+                        : '○ Skipped'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* End node */}
+          <div className="pipeline-mobile-node-row">
+            <div className="pipeline-mobile-node-col">
+              <div className={`pipeline-mobile-dot skipped end ${failedStageIndex >= 0 ? 'failure-end' : ''}`} />
+            </div>
+            <div className="pipeline-mobile-label-col">
+              <span className="pipeline-mobile-label-text muted">End</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const steps = stageData?.steps || [];
   const failedStageName = isFailure ? stageData?.failedStage : null;
 
@@ -290,7 +381,7 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
         <div className="error-message">{error}</div>
       ) : (
         <>
-          {renderGraph()}
+          {isMobile ? renderMobileGraph() : renderGraph()}
 
           {isFailure && (
             <div className="pipeline-steps-section">

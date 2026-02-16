@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import BuildInfo from './BuildInfo';
 import PipelineStagesPage from './PipelineStagesPage';
 import PipelineCard from './PipelineCard';
@@ -26,6 +26,9 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
   const [viewMode, setViewMode] = useState('list');
   const [pipelineSearch, setPipelineSearch] = useState('');
   const [stageViewBuild, setStageViewBuild] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
 
   const canTrigger = ['admin', 'user'].includes(user?.role);
 
@@ -225,9 +228,22 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
             <div className="brand">
               <img className="brand-logo" src={logo} alt="Suprajit Logo" />
             </div>
-            <div className="user-info">
+
+            {/* Hamburger toggle – visible only on mobile */}
+            <button
+              className={`hamburger-toggle ${mobileMenuOpen ? 'open' : ''}`}
+              type="button"
+              aria-label="Toggle menu"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+
+            <div className={`user-info ${mobileMenuOpen ? 'mobile-open' : ''}`}>
               {user?.role === 'admin' && (
-                <button className="secondary-button access-button" type="button" onClick={onAccessManagement}>
+                <button className="secondary-button access-button" type="button" onClick={() => { closeMobileMenu(); onAccessManagement(); }}>
                   Access Management
                 </button>
               )}
@@ -237,7 +253,7 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
                   <div className="user-role">{user?.role?.toUpperCase()}</div>
                 </button>
                 <div className="profile-dropdown">
-                  <button className="logout-button" onClick={onLogout} type="button">
+                  <button className="logout-button" onClick={() => { closeMobileMenu(); onLogout(); }} type="button">
                     Logout
                   </button>
                 </div>
@@ -247,6 +263,9 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
           <p className="dashboard-subtitle">Suprajit Technology Center</p>
         </div>
       </header>
+
+      {/* Overlay to close menu when tapping outside */}
+      {mobileMenuOpen && <div className="mobile-menu-overlay" onClick={closeMobileMenu} />}
 
       <div
         className={`dashboard-container ${
