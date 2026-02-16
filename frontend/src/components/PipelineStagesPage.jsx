@@ -276,9 +276,24 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
       stageIndex: index,
     }));
 
+    const rowHeight = 56;
+    const failedRowIndex = failedStageIndex >= 0 ? failedStageIndex + 1 : -1;
+    const endRowIndex = stageNodes.length + 1;
+    const failureLineStart = failedRowIndex >= 0 ? failedRowIndex * rowHeight + 16 : 0;
+    const failureLineEnd = failedRowIndex >= 0 ? endRowIndex * rowHeight + 16 : 0;
+
     return (
       <div className="pipeline-graph pipeline-graph-mobile">
-        <div className="pipeline-mobile-track">
+        <div
+          className="pipeline-mobile-track"
+          style={failedRowIndex >= 0 ? {
+            '--failure-start': `${failureLineStart}px`,
+            '--failure-end': `${failureLineEnd}px`,
+          } : undefined}
+        >
+          {failedRowIndex >= 0 && (
+            <div className="pipeline-mobile-failure-line" aria-hidden="true" />
+          )}
           {/* Start node */}
           <div className="pipeline-mobile-node-row">
             <div className="pipeline-mobile-node-col">

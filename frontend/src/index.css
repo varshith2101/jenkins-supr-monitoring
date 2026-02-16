@@ -2870,6 +2870,18 @@ body::after {
   padding: 0 0.5rem;
   max-width: 360px;
   margin: 0 auto;
+  transform: translateX(12px);
+}
+
+.pipeline-mobile-failure-line {
+  position: absolute;
+  left: 4px;
+  top: var(--failure-start, 0px);
+  height: calc(var(--failure-end, 0px) - var(--failure-start, 0px));
+  width: 3px;
+  background: var(--status-error);
+  border-radius: 999px;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
 }
 
 .pipeline-mobile-node-row {
@@ -3397,6 +3409,45 @@ body::after {
     display: flex;
     flex-direction: column;
     align-items: center;
+  }
+
+  .login-page {
+    background: #0a0a0f;
+  }
+
+  .login-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(0, 82, 204, 0.4) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(0, 168, 216, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 40% 70%, rgba(0, 153, 204, 0.35) 0%, transparent 50%);
+    animation: blobFloat 15s ease-in-out infinite;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .login-page::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 168, 216, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 168, 216, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+    animation: gridSlide 20s linear infinite;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .login-container,
+  .login-logo-section,
+  .login-form-mobile {
+    position: relative;
+    z-index: 2;
   }
 
   .login-container::after {
