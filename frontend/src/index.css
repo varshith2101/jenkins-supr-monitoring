@@ -69,7 +69,9 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100%;
   overflow-x: hidden;
+  overflow-y: auto;
   position: relative;
 }
 
@@ -109,10 +111,12 @@ body::after {
 
 #root,
 .app {
-  min-height: 100vh;
+  min-height: 100%;
   position: relative;
   z-index: 10;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 
@@ -927,12 +931,14 @@ body::after {
 
 /* Dashboard */
 .dashboard-screen {
-  min-height: 100%;
+  min-height: 100vh;
   background: var(--bg-base);
   padding-bottom: 0;
   position: relative;
-  display: block;
-  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  overflow: visible;
 }
 
 .dashboard-header {
@@ -1212,12 +1218,14 @@ body::after {
   padding: 2rem clamp(1rem, 4vw, 2rem);
   position: relative;
   z-index: 100;
-  flex: 0 0 auto;
-  overflow-x: hidden;
+  flex: 1 0 auto;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
 }
 
 .app-footer {
-  margin-top: 2.5rem;
+  margin-top: auto;
   padding: 1.5rem 1rem 2rem;
   text-align: center;
   color: var(--text-muted);
@@ -1241,6 +1249,7 @@ body::after {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
+  align-content: start;
 }
 
 .dashboard-grid.dashboard-grid-single {
@@ -2341,8 +2350,8 @@ body::after {
   border-radius: 0.75rem;
   padding: 1.25rem;
   border: 1px solid var(--border-default);
-  max-height: 200px;
-  overflow-y: auto;
+  max-height: none;
+  overflow-y: visible;
   overflow-x: hidden;
   width: 100%;
   box-sizing: border-box;
