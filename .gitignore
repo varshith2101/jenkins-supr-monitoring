@@ -35,4 +35,9 @@ Thumbs.db
 .docker/
 
 test.txt
+scripts/local/rate_limit_test.sh
+scripts/local/deploy_local.sh
+
+# Local npm cache
+.npm-cache/
 

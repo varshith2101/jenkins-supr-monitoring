@@ -134,14 +134,15 @@ services:
           rm -rf /var/lib/apt/lists/* &&
           node /app/scripts/ci/wait_for_http.js http://nginx/health &&
           cd /app/backend &&
-          if [ -d /app/backend/node_modules ]; then find /app/backend/node_modules -mindepth 1 -exec rm -rf {} + || true; fi &&
-          rm -rf /root/.npm /tmp/npm-cache || true &&
+          rm -rf /app/backend/node_modules &&
+          rm -rf /root/.npm /tmp/npm-cache /app/.npm-cache || true &&
           npm cache clean --force &&
-          npm config set cache /tmp/npm-cache --global &&
+          npm config set cache /app/.npm-cache --global &&
+          npm config set prefer-online true --global &&
           npm config set fetch-retries 5 --global &&
           npm config set fetch-retry-mintimeout 20000 --global &&
           npm config set fetch-retry-maxtimeout 120000 --global &&
-          npm ci --include=dev --prefer-online --no-audit --no-fund &&
+          npm ci --include=dev --no-audit --no-fund &&
           npm test
 
 volumes:
