@@ -1,9 +1,12 @@
+import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 
-function AccessDenied({ user, onLogout, onBack }) {
+function AccessDenied({ user, onLogout }) {
+  const navigate = useNavigate();
+
   return (
     <div className="dashboard-screen">
-      <Navbar actionLabel="Back to Dashboard" onAction={onBack} />
+      <Navbar actionLabel="Back to Dashboard" onAction={() => navigate('/')} />
       <header className="dashboard-header">
         <div className="dashboard-header-content">
           <div className="brand">

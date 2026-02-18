@@ -1,54 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
-import BuildInfo from './BuildInfo';
-import PipelineStagesPage from './PipelineStagesPage';
+import { useNavigate } from 'react-router-dom';
 import PipelineCard from './PipelineCard';
-import ParametersModal from './ParametersModal';
 import { jenkinsService } from '../services/jenkinsService';
 import { formatTimestamp } from '../utils/formatters';
 import logo from '../main-logo-2.png';
 
-function Dashboard({ user, onLogout, onAccessManagement }) {
-  const [selectedJob, setSelectedJob] = useState('');
-  const [buildData, setBuildData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [autoRefresh, setAutoRefresh] = useState(null);
+function Dashboard({ user, onLogout }) {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [jobsError, setJobsError] = useState('');
-  const [triggering, setTriggering] = useState(false);
-  const [triggerMessage, setTriggerMessage] = useState('');
-  const [lastUpdated, setLastUpdated] = useState(null);
-  const [showParametersModal, setShowParametersModal] = useState(false);
-  const [jobParameters, setJobParameters] = useState([]);
   const [pipelineSummaries, setPipelineSummaries] = useState([]);
   const [summariesLoading, setSummariesLoading] = useState(false);
-  const [viewMode, setViewMode] = useState('list');
+  const [lastUpdated, setLastUpdated] = useState(null);
   const [pipelineSearch, setPipelineSearch] = useState('');
-  const [stageViewBuild, setStageViewBuild] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
 
-  const canTrigger = ['admin', 'user'].includes(user?.role);
-
-  // Fetch available jobs when component mounts
   useEffect(() => {
     fetchJobs();
   }, []);
-
-  useEffect(() => {
-    if (viewMode === 'detail' && selectedJob) {
-      fetchBuildInfo();
-      startAutoRefresh();
-    } else if (viewMode === 'stages') {
-      stopAutoRefresh();
-    } else {
-      stopAutoRefresh();
-    }
-
-    return () => stopAutoRefresh();
-  }, [selectedJob, viewMode]);
 
   const fetchJobs = async () => {
     setJobsLoading(true);
@@ -99,6 +71,7 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
       });
 
       setPipelineSummaries(summaries);
+      setLastUpdated(new Date());
     } catch (err) {
       setPipelineSummaries(jobList.map((job) => ({ name: job.name, lastBuild: null, error: true })));
     } finally {
@@ -106,119 +79,19 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
     }
   };
 
-  const fetchBuildInfo = async () => {
-    if (!selectedJob) return;
-
-    setLoading(true);
-    setError('');
-
-    try {
-      const data = await jenkinsService.getBuilds(selectedJob);
-      setBuildData(data);
-      setLastUpdated(new Date());
-    } catch (err) {
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        onLogout();
-      } else {
-        setError(err.response?.data?.error || 'Failed to fetch build information');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleTriggerBuild = async () => {
-    if (!selectedJob) return;
-    
-    // First check if job has parameters
-    try {
-      const paramData = await jenkinsService.getJobParameters(selectedJob);
-      
-      if (paramData.hasParameters && paramData.parameters.length > 0) {
-        // Show parameters modal
-        setJobParameters(paramData.parameters);
-        setShowParametersModal(true);
-      } else {
-        // Trigger without parameters
-        await triggerBuildWithParameters(null);
-      }
-    } catch (err) {
-      setTriggerMessage('Failed to check job parameters');
-    }
-  };
-
-  const triggerBuildWithParameters = async (parameters) => {
-    setTriggering(true);
-    setTriggerMessage('');
-
-    try {
-      await jenkinsService.triggerBuild(selectedJob, parameters);
-      setTriggerMessage('Build queued successfully.');
-      setShowParametersModal(false);
-      fetchBuildInfo();
-    } catch (err) {
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        onLogout();
-      } else {
-        setTriggerMessage(err.response?.data?.error || 'Failed to trigger build');
-      }
-    } finally {
-      setTriggering(false);
-    }
-  };
-
-  const startAutoRefresh = () => {
-    stopAutoRefresh();
-    const interval = setInterval(() => {
-      if (selectedJob) {
-        fetchBuildInfo();
-      }
-    }, 10000);
-    setAutoRefresh(interval);
-  };
-
-  const stopAutoRefresh = () => {
-    if (autoRefresh) {
-      clearInterval(autoRefresh);
-      setAutoRefresh(null);
-    }
-  };
-
   const handlePipelineSelect = (jobName) => {
-    setSelectedJob(jobName);
-    setBuildData(null);
-    setError('');
-    setTriggerMessage('');
-    setViewMode('detail');
+    navigate(`/pipeline/${encodeURIComponent(jobName)}`);
   };
 
-  const handleBackToList = () => {
-    setViewMode('list');
-    setSelectedJob('');
-    setBuildData(null);
-    setError('');
-    setTriggerMessage('');
-    setStageViewBuild(null);
-  };
+  /* Filter by user's allowed pipelines, then by search text */
+  const userPipelines = user?.pipelines || [];
+  const accessibleSummaries = user?.role === 'admin' || userPipelines.length === 0
+    ? pipelineSummaries
+    : pipelineSummaries.filter((p) => userPipelines.includes(p.name));
 
-  const handleViewStages = ({ jobName, build }) => {
-    if (!jobName || !build) return;
-    setSelectedJob(jobName);
-    setStageViewBuild(build);
-    setViewMode('stages');
-  };
-
-  const handleBackToBuild = () => {
-    setViewMode('detail');
-  };
-
-  const filteredPipelineSummaries = pipelineSummaries.filter((pipeline) =>
+  const filteredPipelineSummaries = accessibleSummaries.filter((pipeline) =>
     pipeline.name.toLowerCase().includes(pipelineSearch.trim().toLowerCase())
   );
-
-  const handleRefresh = () => {
-    fetchBuildInfo();
-  };
 
   return (
     <div className="dashboard-screen">
@@ -229,7 +102,6 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
               <img className="brand-logo" src={logo} alt="Suprajit Logo" />
             </div>
 
-            {/* Hamburger toggle – visible only on mobile */}
             <button
               className={`hamburger-toggle ${mobileMenuOpen ? 'open' : ''}`}
               type="button"
@@ -254,7 +126,7 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
                 </div>
               </div>
               {user?.role === 'admin' && (
-                <button className="secondary-button access-button" type="button" onClick={() => { closeMobileMenu(); onAccessManagement(); }}>
+                <button className="secondary-button access-button" type="button" onClick={() => { closeMobileMenu(); navigate('/access'); }}>
                   Access Management
                 </button>
               )}
@@ -267,130 +139,52 @@ function Dashboard({ user, onLogout, onAccessManagement }) {
         </div>
       </header>
 
-      {/* Overlay to close menu when tapping outside */}
       {mobileMenuOpen && <div className="mobile-menu-overlay" onClick={closeMobileMenu} />}
 
-      <div
-        className={`dashboard-container ${
-          viewMode === 'stages' ? 'dashboard-container-wide' : 'dashboard-container-narrow'
-        }`}
-      >
+      <div className="dashboard-container dashboard-container-narrow">
         <section className="dashboard-grid dashboard-grid-single">
           <div className="panel panel-primary">
-            {viewMode === 'list' ? (
-              <>
-                <div className="panel-header">
-                  <h2>Pipeline Overview</h2>
-                  <div className="panel-search">
-                    <input
-                      type="text"
-                      placeholder="Search pipelines..."
-                      value={pipelineSearch}
-                      onChange={(event) => setPipelineSearch(event.target.value)}
-                      className="panel-search-input"
-                    />
-                  </div>
-                  {lastUpdated && (
-                    <span className="panel-meta">Updated {formatTimestamp(lastUpdated)}</span>
-                  )}
-                </div>
+            <div className="panel-header">
+              <h2>Pipeline Overview</h2>
+              <div className="panel-search">
+                <input
+                  type="text"
+                  placeholder="Search pipelines..."
+                  value={pipelineSearch}
+                  onChange={(event) => setPipelineSearch(event.target.value)}
+                  className="panel-search-input"
+                />
+              </div>
+              {lastUpdated && (
+                <span className="panel-meta">Updated {formatTimestamp(lastUpdated)}</span>
+              )}
+            </div>
 
-                {jobsError && <div className="error-message">{jobsError}</div>}
+            {jobsError && <div className="error-message">{jobsError}</div>}
 
-                {jobsLoading || summariesLoading ? (
-                  <div className="loading">
-                    <div className="spinner"></div>
-                    <p>Loading pipelines...</p>
-                  </div>
-                ) : filteredPipelineSummaries.length === 0 ? (
-                  <div className="muted-card">No pipelines available.</div>
-                ) : (
-                  <div className="pipeline-card-list">
-                    {filteredPipelineSummaries.map((pipeline) => (
-                      <PipelineCard
-                        key={pipeline.name}
-                        jobName={pipeline.name}
-                        lastBuild={pipeline.lastBuild}
-                        hasError={pipeline.error}
-                        onReadMore={() => handlePipelineSelect(pipeline.name)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : viewMode === 'stages' ? (
-              <PipelineStagesPage
-                jobName={selectedJob}
-                build={stageViewBuild}
-                onBack={handleBackToBuild}
-                onLogout={onLogout}
-              />
+            {jobsLoading || summariesLoading ? (
+              <div className="loading">
+                <div className="spinner"></div>
+                <p>Loading pipelines...</p>
+              </div>
+            ) : filteredPipelineSummaries.length === 0 ? (
+              <div className="muted-card">No pipelines available.</div>
             ) : (
-              <>
-                <div className="panel-header">
-                  <div className="panel-header-main">
-                    <button className="ghost-button" type="button" onClick={handleBackToList}>
-                      Back
-                    </button>
-                    <h2>{selectedJob}</h2>
-                  </div>
-                  {lastUpdated && (
-                    <span className="panel-meta">Updated {lastUpdated.toLocaleTimeString()}</span>
-                  )}
-                </div>
-
-                <div className="pipeline-actions">
-                  <div className="job-actions">
-                    <button
-                      className="ghost-button"
-                      onClick={handleRefresh}
-                      disabled={!selectedJob || loading}
-                    >
-                      {loading ? 'Refreshing...' : 'Refresh'}
-                    </button>
-                    <button
-                      className="primary-button"
-                      onClick={handleTriggerBuild}
-                      disabled={!selectedJob || triggering || !canTrigger}
-                    >
-                      {triggering ? 'Triggering...' : 'Trigger Build'}
-                    </button>
-                  </div>
-                  {triggerMessage && (
-                    <div className="status-message">{triggerMessage}</div>
-                  )}
-                </div>
-
-                {error && <div className="error-message">{error}</div>}
-
-                {loading && !buildData && (
-                  <div className="loading">
-                    <div className="spinner"></div>
-                    <p>Loading build intelligence...</p>
-                  </div>
-                )}
-
-                {buildData && (
-                  <BuildInfo
-                    data={buildData}
-                    jobName={selectedJob}
-                    onViewStages={handleViewStages}
+              <div className="pipeline-card-list">
+                {filteredPipelineSummaries.map((pipeline) => (
+                  <PipelineCard
+                    key={pipeline.name}
+                    jobName={pipeline.name}
+                    lastBuild={pipeline.lastBuild}
+                    hasError={pipeline.error}
+                    onReadMore={() => handlePipelineSelect(pipeline.name)}
                   />
-                )}
-              </>
+                ))}
+              </div>
             )}
           </div>
         </section>
       </div>
-
-      {showParametersModal && (
-        <ParametersModal
-          parameters={jobParameters}
-          onSubmit={triggerBuildWithParameters}
-          onClose={() => setShowParametersModal(false)}
-          triggering={triggering}
-        />
-      )}
 
       <footer className="app-footer">
         Jenkins Monitor · Suprajit Technology Center
