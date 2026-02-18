@@ -1,7 +1,9 @@
+import { createPortal } from 'react-dom';
+
 function BuildLogsModal({ build, logs, command, loading, error, onClose }) {
   if (!build) return null;
 
-  return (
+  return createPortal(
     <div className="modal-overlay modal-overlay-logs" onClick={onClose}>
       <div className="modal-content logs-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
@@ -35,7 +37,8 @@ function BuildLogsModal({ build, logs, command, loading, error, onClose }) {
         <div className="modal-footer">
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

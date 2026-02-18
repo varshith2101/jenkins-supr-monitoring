@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 function ParametersModal({ parameters, onSubmit, onClose, triggering }) {
   const [paramValues, setParamValues] = useState(() => {
@@ -21,7 +22,7 @@ function ParametersModal({ parameters, onSubmit, onClose, triggering }) {
     onSubmit(paramValues);
   };
 
-  return (
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
@@ -85,7 +86,8 @@ function ParametersModal({ parameters, onSubmit, onClose, triggering }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

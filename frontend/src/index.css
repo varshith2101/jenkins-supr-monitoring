@@ -115,7 +115,7 @@ body::after {
   min-height: 100vh;
   position: relative;
   z-index: 10;
-  overflow: hidden;
+  overflow: clip;
   display: flex;
   flex-direction: column;
 }
@@ -2463,21 +2463,22 @@ body::after {
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   z-index: 1000;
   animation: fadeIn 0.3s ease-out;
   padding: 1rem;
+  width: 100vw;
+  height: 100dvh;
 }
 
 .modal-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background: rgba(20, 20, 25, 0.95);
   border-radius: 1rem;
   border: 2px solid var(--primary);
@@ -3553,13 +3554,12 @@ body::after {
   /* ---------- Modals ---------- */
   .modal-overlay {
     padding: 0.5rem;
-    align-items: center;
   }
 
   .modal-content {
     max-height: 85vh;
     border-radius: 1rem;
-    max-width: 100%;
+    max-width: calc(100% - 1rem);
     width: calc(100% - 1rem);
   }
 

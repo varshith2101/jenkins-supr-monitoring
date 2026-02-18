@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 const roles = [
   { value: 'user', label: 'User' },
@@ -291,7 +292,7 @@ function UserManagement({
         )}
       </div>
 
-      {pipelineEditorUser && (
+      {pipelineEditorUser && createPortal(
         <div className="modal-overlay" role="dialog" aria-modal="true">
           <div className="modal-content pipeline-editor-modal">
             <div className="modal-header">
@@ -346,7 +347,8 @@ function UserManagement({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
