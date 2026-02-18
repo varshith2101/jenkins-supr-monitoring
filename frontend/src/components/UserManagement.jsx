@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 const roles = [
   { value: 'user', label: 'User' },
@@ -26,6 +27,10 @@ function UserManagement({
   const [actionError, setActionError] = useState('');
   const [pipelineSearch, setPipelineSearch] = useState('');
   const [userSearch, setUserSearch] = useState('');
+  const [pipelineEditorUser, setPipelineEditorUser] = useState(null);
+  const [pipelineDraft, setPipelineDraft] = useState([]);
+  const [pipelineEditSearch, setPipelineEditSearch] = useState('');
+  const [pipelineSaving, setPipelineSaving] = useState(false);
 
   const resetForm = () => {
     setForm({
@@ -66,6 +71,10 @@ function UserManagement({
     job.toLowerCase().includes(pipelineSearch.trim().toLowerCase())
   );
 
+  const filteredEditorJobs = availableJobs?.filter((job) =>
+    job.toLowerCase().includes(pipelineEditSearch.trim().toLowerCase())
+  );
+
   const filteredUsers = users
     .filter((user) => user.role !== 'admin')
     .filter((user) => {
@@ -75,6 +84,39 @@ function UserManagement({
         .filter(Boolean)
         .some((value) => value.toLowerCase().includes(query));
     });
+
+  const openPipelineEditor = (targetUser) => {
+    setPipelineEditorUser(targetUser);
+    setPipelineDraft([...(targetUser.pipelines || [])]);
+    setPipelineEditSearch('');
+  };
+
+  const closePipelineEditor = () => {
+    if (pipelineSaving) return;
+    setPipelineEditorUser(null);
+    setPipelineDraft([]);
+    setPipelineEditSearch('');
+  };
+
+  const togglePipelineDraft = (job) => {
+    setPipelineDraft((prev) =>
+      prev.includes(job) ? prev.filter((item) => item !== job) : [...prev, job]
+    );
+  };
+
+  const handleSavePipelines = async () => {
+    if (!pipelineEditorUser) return;
+    setPipelineSaving(true);
+    setActionError('');
+    try {
+      await onUpdate(pipelineEditorUser.username, { pipelines: pipelineDraft });
+      closePipelineEditor();
+    } catch (err) {
+      setActionError(err?.response?.data?.error || 'Failed to update pipelines');
+    } finally {
+      setPipelineSaving(false);
+    }
+  };
 
   return (
     <div className="user-management">
@@ -220,50 +262,13 @@ function UserManagement({
                       </option>
                     ))}
                   </select>
-                  <details>
-                    <summary className="ghost-button">
-                      Pipelines
-                    </summary>
-                    <div className="pipeline-list">
-                      <div className="pipeline-search">
-                        <input
-                          type="text"
-                          placeholder="Search pipelines..."
-                          value={pipelineSearch}
-                          onChange={(e) => setPipelineSearch(e.target.value)}
-                        />
-                      </div>
-                      {filteredJobs && filteredJobs.length > 0 ? (
-                        filteredJobs.map((job) => (
-                          <label key={job} className="pipeline-checkbox pipeline-checkbox--fancy">
-                            <input
-                              type="checkbox"
-                              checked={user.pipelines && user.pipelines.includes(job)}
-                              onChange={async (e) => {
-                                setActionError('');
-                                try {
-                                  const newPipelines = e.target.checked
-                                    ? [...(user.pipelines || []), job]
-                                    : (user.pipelines || []).filter((p) => p !== job);
-                                  await onUpdate(user.username, {
-                                    pipelines: newPipelines,
-                                  });
-                                } catch (err) {
-                                  setActionError(
-                                    err?.response?.data?.error || 'Failed to update pipelines'
-                                  );
-                                }
-                              }}
-                            />
-                            <span className="pipeline-check"></span>
-                            <span>{job}</span>
-                          </label>
-                        ))
-                      ) : (
-                        <p className="muted-text">No pipelines</p>
-                      )}
-                    </div>
-                  </details>
+                  <button
+                    className="ghost-button"
+                    type="button"
+                    onClick={() => openPipelineEditor(user)}
+                  >
+                    Pipelines ({user.pipelines?.length || 0})
+                  </button>
                   <button
                     className="ghost-button danger"
                     type="button"
@@ -286,6 +291,65 @@ function UserManagement({
           </div>
         )}
       </div>
+
+      {pipelineEditorUser && createPortal(
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal-content pipeline-editor-modal">
+            <div className="modal-header">
+              <h2>Manage pipelines</h2>
+              <p className="muted-text">
+                {pipelineEditorUser.displayName || pipelineEditorUser.username}
+              </p>
+            </div>
+            <div className="modal-body">
+              <div className="pipeline-search">
+                <input
+                  type="text"
+                  placeholder="Search pipelines..."
+                  value={pipelineEditSearch}
+                  onChange={(e) => setPipelineEditSearch(e.target.value)}
+                />
+              </div>
+              <div className="pipeline-list">
+                {filteredEditorJobs && filteredEditorJobs.length > 0 ? (
+                  filteredEditorJobs.map((job) => (
+                    <label key={job} className="pipeline-checkbox pipeline-checkbox--fancy">
+                      <input
+                        type="checkbox"
+                        checked={pipelineDraft.includes(job)}
+                        onChange={() => togglePipelineDraft(job)}
+                      />
+                      <span className="pipeline-check"></span>
+                      <span>{job}</span>
+                    </label>
+                  ))
+                ) : (
+                  <p className="muted-text">No pipelines</p>
+                )}
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="secondary-button"
+                type="button"
+                onClick={closePipelineEditor}
+                disabled={pipelineSaving}
+              >
+                Cancel
+              </button>
+              <button
+                className="primary-button"
+                type="button"
+                onClick={handleSavePipelines}
+                disabled={pipelineSaving}
+              >
+                {pipelineSaving ? 'Saving...' : 'Save changes'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

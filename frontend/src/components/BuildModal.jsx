@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { formatStatus, formatDuration, formatTimestamp, getStatusClass } from '../utils/formatters';
 import easterEggImage from '../assets/asset.png';
 
@@ -18,7 +19,7 @@ function BuildModal({ build, onClose, onViewStages, canViewStages }) {
       ? 'Aborted'
       : formatDuration(build.duration);
 
-  return (
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
@@ -79,10 +80,10 @@ function BuildModal({ build, onClose, onViewStages, canViewStages }) {
               View Stages
             </button>
           )}
-          <button className="secondary-button" onClick={onClose}>Close</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

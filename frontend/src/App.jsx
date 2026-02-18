@@ -20,6 +20,7 @@ function App() {
     }
   }, []);
 
+
   const handleLogin = (profile) => {
     setIsAuthenticated(true);
     setUser(profile);
@@ -42,7 +43,7 @@ function App() {
   };
 
   return (
-    <div className="app">
+  <div className="app">
       {!isAuthenticated ? (
         <Login onLogin={handleLogin} />
       ) : activeView === 'access' ? (

@@ -61,6 +61,7 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   background: var(--bg-base);
@@ -68,7 +69,10 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: auto;
+  min-height: 100%;
   overflow-x: hidden;
+  overflow-y: auto;
   position: relative;
 }
 
@@ -111,6 +115,9 @@ body::after {
   min-height: 100vh;
   position: relative;
   z-index: 10;
+  overflow: clip;
+  display: flex;
+  flex-direction: column;
 }
 
 
@@ -455,6 +462,7 @@ body::after {
   background: var(--bg-base);
   position: relative;
   overflow: hidden;
+  flex-direction: column;
 }
 
 .login-container {
@@ -463,6 +471,7 @@ body::after {
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
   position: relative;
+  flex: 1;
 }
 
 .login-container::after {
@@ -704,6 +713,10 @@ body::after {
     0 0 60px var(--accent-glow);
 }
 
+/* Mobile-only login form – hidden on desktop */
+.login-form-mobile {
+  display: none;
+}
 
 .form-group {
   margin-bottom: 1.25rem;
@@ -921,8 +934,12 @@ body::after {
 .dashboard-screen {
   min-height: 100vh;
   background: var(--bg-base);
-  padding-bottom: 4rem;
+  padding-bottom: 0;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  overflow: visible;
 }
 
 .dashboard-header {
@@ -1043,6 +1060,10 @@ body::after {
   gap: 1rem;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.mobile-logout-button {
+  display: none;
 }
 
 .access-button {
@@ -1192,11 +1213,28 @@ body::after {
 
 /* Dashboard Container */
 .dashboard-container {
+  width: 100%;
   max-width: 1600px;
   margin: 0 auto;
   padding: 2rem clamp(1rem, 4vw, 2rem);
   position: relative;
   z-index: 100;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+.app-footer {
+  margin-top: auto;
+  padding: 0.6rem 1rem 0.75rem;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-top: 1px solid var(--border-subtle);
+  background: rgba(10, 10, 15, 0.6);
+  backdrop-filter: blur(12px);
 }
 
 .dashboard-container.dashboard-container-narrow {
@@ -1211,6 +1249,7 @@ body::after {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
+  align-content: start;
 }
 
 .dashboard-grid.dashboard-grid-single {
@@ -1638,6 +1677,8 @@ body::after {
 .pipeline-stages-view {
   display: grid;
   gap: 1.5rem;
+  max-width: 100%;
+  overflow: visible;
 }
 
 .pipeline-stages-view .panel {
@@ -1925,6 +1966,8 @@ body::after {
 .pipeline-steps-section {
   display: grid;
   gap: 1rem;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .pipeline-steps-section h3 {
@@ -1935,6 +1978,8 @@ body::after {
 .pipeline-steps-list {
   display: grid;
   gap: 0.75rem;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .pipeline-step {
@@ -1942,6 +1987,8 @@ body::after {
   border-radius: 0.75rem;
   background: var(--bg-elevated);
   padding: 0.5rem 0.75rem;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .pipeline-step summary {
@@ -1986,6 +2033,9 @@ body::after {
   max-height: 280px;
   overflow: auto;
   white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 
 .build-detail {
@@ -2263,23 +2313,7 @@ body::after {
   max-width: 100%;
 }
 
-.user-actions details {
-  position: relative;
-  max-width: 100%;
-}
 
-.user-actions details[open] {
-  flex-basis: 100%;
-}
-
-.user-actions details summary {
-  cursor: pointer;
-  list-style: none;
-}
-
-.user-actions details summary::-webkit-details-marker {
-  display: none;
-}
 
 .pipeline-selector {
   margin-bottom: 1rem;
@@ -2300,8 +2334,8 @@ body::after {
   border-radius: 0.75rem;
   padding: 1.25rem;
   border: 1px solid var(--border-default);
-  max-height: 200px;
-  overflow-y: auto;
+  max-height: none;
+  overflow-y: visible;
   overflow-x: hidden;
   width: 100%;
   box-sizing: border-box;
@@ -2331,14 +2365,20 @@ body::after {
     0 0 12px rgba(0, 82, 204, 0.35);
 }
 
-.user-actions .pipeline-list {
-  position: absolute;
-  z-index: 10;
-  min-width: 240px;
-  max-width: calc(100vw - 3rem);
-  margin-top: 0.5rem;
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-default);
+
+.pipeline-editor-modal {
+  max-width: 620px;
+}
+
+.pipeline-editor-modal .pipeline-list {
+  max-height: min(320px, 45vh);
+  overflow-y: auto;
+  padding: 0.85rem;
+}
+
+.pipeline-editor-modal .pipeline-checkbox--fancy {
+  padding-left: 1.6rem;
+  font-size: 0.9rem;
 }
 
 .pipeline-checkbox {
@@ -2420,158 +2460,25 @@ body::after {
   font-size: 0.875rem;
 }
 
-/* Responsive Improvements */
-@media (max-width: 1024px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .login-container {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-
-  .login-container::after {
-    display: none;
-  }
-
-  .login-logo-section {
-    min-height: 40vh;
-    padding: 3rem 1.5rem;
-  }
-
-  .login-form-section {
-    min-height: 60vh;
-    padding: 3rem 1.5rem;
-  }
-
-  .login-logo-content img {
-    max-width: 200px;
-  }
-
-  .login-form-container {
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-header-content {
-    flex-direction: column;
-  }
-
-  .user-info {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .job-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .job-actions button {
-    width: 100%;
-  }
-
-  .current-build {
-    grid-template-columns: 1fr;
-  }
-
-  .build-card {
-    grid-template-columns: 1fr;
-  }
-
-  .user-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .user-actions {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .user-actions details {
-    width: 100%;
-  }
-
-  .user-actions details[open] {
-    flex-basis: 100%;
-  }
-
-  .user-actions .pipeline-list {
-    position: static;
-    min-width: auto;
-    max-width: 100%;
-    margin-top: 0.5rem;
-  }
-
-  .panel {
-    padding: 1.25rem;
-  }
-
-  .login-container {
-    padding: 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .user-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .user-actions select,
-  .user-actions button,
-  .user-actions details {
-    width: 100%;
-  }
-
-  .user-actions select {
-    min-width: 0;
-  }
-
-  .ghost-button {
-    padding: 0.625rem 1rem;
-    font-size: 0.8125rem;
-  }
-
-  .login-container {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-
-  .login-container img {
-    max-width: 250px;
-  }
-
-  .login-container h1 {
-    font-size: 1.5rem;
-  }
-}
-
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   z-index: 1000;
   animation: fadeIn 0.3s ease-out;
   padding: 1rem;
+  width: 100vw;
+  height: 100dvh;
 }
 
 .modal-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background: rgba(20, 20, 25, 0.95);
   border-radius: 1rem;
   border: 2px solid var(--primary);
@@ -2580,12 +2487,35 @@ body::after {
     0 0 40px var(--primary-glow),
     0 0 60px var(--accent-glow);
   max-width: 600px;
-  width: 100%;
+  width: min(600px, 100%);
   max-height: 90vh;
   overflow: hidden;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   animation: slideInDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    width: calc(100% - 1rem);
+    max-height: 85vh;
+  }
+}
+
+/* When a form wraps header + body + footer, it must also flex-column */
+.modal-content > form {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 .modal-header {
@@ -2595,6 +2525,7 @@ body::after {
   align-items: center;
   justify-content: space-between;
   background: linear-gradient(135deg, rgba(0, 82, 204, 0.1), rgba(0, 168, 216, 0.05));
+  flex-shrink: 0;
 }
 
 .modal-header h2 {
@@ -2633,7 +2564,9 @@ body::after {
 .modal-body {
   padding: 1.5rem;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
+  min-height: 0;
 }
 
 .modal-footer {
@@ -2643,6 +2576,7 @@ body::after {
   gap: 1rem;
   justify-content: flex-end;
   background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 .modal-footer .secondary-button,
@@ -2707,6 +2641,7 @@ body::after {
 
 .logs-modal {
   max-width: 800px;
+  overflow-x: hidden;
 }
 
 .logs-command-row {
@@ -2715,6 +2650,7 @@ body::after {
   gap: 1rem;
   align-items: start;
   margin-bottom: 1.5rem;
+  min-width: 0;
 }
 
 .logs-command-label {
@@ -2733,6 +2669,11 @@ body::after {
   border-radius: 0.75rem;
   border: 1px solid var(--border-default);
   color: var(--text-primary);
+  max-width: 100%;
+  overflow-x: hidden;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .logs-output {
@@ -2746,7 +2687,10 @@ body::after {
   line-height: 1.5;
   max-height: 50vh;
   overflow: auto;
+  overflow-x: hidden;
   white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .logs-loading {
@@ -2878,5 +2822,843 @@ body::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* =====================================================
+   HAMBURGER MENU & MOBILE NAVIGATION
+   ===================================================== */
+
+.hamburger-toggle {
+  display: none;
+  appearance: none;
+  background: rgba(20, 20, 25, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px;
+  z-index: 1010;
+  position: relative;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(0, 82, 204, 0.25);
+  border-radius: 0.75rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hamburger-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35), 0 0 24px rgba(0, 82, 204, 0.35);
+}
+
+.hamburger-toggle span {
+  display: block;
+  width: 24px;
+  height: 2.5px;
+  border-radius: 999px;
+  background: var(--text-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+.hamburger-toggle.open span:nth-child(1) {
+  transform: translateY(7.5px) rotate(45deg);
+}
+
+.hamburger-toggle.open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.hamburger-toggle.open span:nth-child(3) {
+  transform: translateY(-7.5px) rotate(-45deg);
+}
+
+.mobile-menu-overlay {
+  display: none;
+}
+
+/* =====================================================
+   MOBILE PIPELINE STAGES – VERTICAL LAYOUT
+   ===================================================== */
+
+.pipeline-graph-mobile {
+  background: radial-gradient(circle at top, rgba(0, 82, 204, 0.12), transparent 60%),
+    rgba(10, 10, 15, 0.85);
+  border-radius: 1rem;
+  border: 1px solid rgba(0, 82, 204, 0.2);
+  padding: 1.5rem 1rem;
+  box-shadow: var(--shadow-md);
+}
+
+.pipeline-mobile-track {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  position: relative;
+  padding: 0 0.5rem;
+  max-width: 360px;
+  margin: 0 auto;
+  transform: translateX(12px);
+}
+
+.pipeline-mobile-failure-svg {
+  position: absolute;
+  left: -10px;
+  top: 0;
+  width: 48px;
+  height: 100%;
+  pointer-events: none;
+}
+
+.pipeline-mobile-failure-path {
+  fill: none;
+  stroke: var(--status-error);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+  opacity: 0.9;
+}
+
+.pipeline-mobile-node-row {
+  display: flex;
+  align-items: stretch;
+  min-height: 56px;
+}
+
+.pipeline-mobile-node-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 44px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.pipeline-mobile-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  background: var(--bg-surface);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.pipeline-mobile-dot-index {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.pipeline-mobile-dot.start,
+.pipeline-mobile-dot.end {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+  cursor: default;
+}
+
+.pipeline-mobile-dot.start .pipeline-mobile-dot-index,
+.pipeline-mobile-dot.end .pipeline-mobile-dot-index {
+  display: none;
+}
+
+.pipeline-mobile-dot.success {
+  background: var(--status-success);
+  border-color: var(--status-success);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.55);
+}
+
+.pipeline-mobile-dot.failure {
+  background: var(--status-error);
+  border-color: var(--status-error);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.55);
+}
+
+.pipeline-mobile-dot.warning {
+  background: var(--status-warning);
+  border-color: var(--status-warning);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.55);
+}
+
+.pipeline-mobile-dot.in-progress {
+  background: var(--primary-bright);
+  border-color: var(--primary-light);
+  box-shadow: 0 0 12px rgba(85, 136, 255, 0.55);
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.pipeline-mobile-dot.skipped {
+  background: rgba(148, 163, 184, 0.6);
+  border-color: rgba(148, 163, 184, 0.6);
+}
+
+.pipeline-mobile-dot.failure-end {
+  background: rgba(239, 68, 68, 0.9);
+  border-color: rgba(239, 68, 68, 0.9);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5), 0 0 20px rgba(239, 68, 68, 0.35);
+}
+
+.pipeline-mobile-segment {
+  width: 4px;
+  flex: 1;
+  min-height: 24px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.35);
+}
+
+.pipeline-mobile-segment.success {
+  background: var(--status-success);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.35);
+}
+
+.pipeline-mobile-segment.failure {
+  background: var(--status-error);
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.35);
+}
+
+.pipeline-mobile-segment.warning {
+  background: var(--status-warning);
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.35);
+}
+
+.pipeline-mobile-segment.in-progress {
+  background: var(--primary-bright);
+  box-shadow: 0 0 6px rgba(85, 136, 255, 0.35);
+}
+
+/* Label column (right side) */
+.pipeline-mobile-label-col {
+  display: flex;
+  align-items: center;
+  padding-left: 0.75rem;
+  flex: 1;
+  min-height: 32px;
+  min-width: 0;
+}
+
+.pipeline-mobile-label-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.pipeline-mobile-label-text.muted {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Always-visible stage info on mobile */
+.pipeline-mobile-stage-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.pipeline-mobile-stage-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.pipeline-mobile-stage-status {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pipeline-mobile-stage-status.success {
+  color: var(--status-success);
+}
+
+.pipeline-mobile-stage-status.failure {
+  color: var(--status-error);
+}
+
+.pipeline-mobile-stage-status.warning {
+  color: var(--status-warning);
+}
+
+.pipeline-mobile-stage-status.in-progress {
+  color: var(--primary-bright);
+}
+
+.pipeline-mobile-stage-status.skipped,
+.pipeline-mobile-stage-status.unknown {
+  color: var(--text-muted);
+}
+
+
+/* =====================================================
+   RESPONSIVE – TABLET (≤ 1024px)
+   ===================================================== */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .login-container {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .login-container::after {
+    display: none;
+  }
+
+  .login-logo-section {
+    min-height: 40vh;
+    padding: 3rem 1.5rem;
+  }
+
+  .login-form-section {
+    min-height: 60vh;
+    padding: 3rem 1.5rem;
+  }
+
+  .login-logo-content img {
+    max-width: 200px;
+  }
+
+  .login-form-container {
+    max-width: 100%;
+  }
+}
+
+
+/* =====================================================
+   RESPONSIVE – MOBILE (≤ 768px)
+   ===================================================== */
+@media (max-width: 768px) {
+
+  /* ---------- Hamburger visible ---------- */
+  .hamburger-toggle {
+    display: flex;
+  }
+
+  .mobile-menu-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  /* ---------- User-info becomes slide-down menu ---------- */
+  .user-info {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-panel);
+    border-bottom: 2px solid var(--border-default);
+    box-shadow: var(--shadow-lg);
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem 1.25rem;
+    gap: 0.75rem;
+    z-index: 1100;
+    animation: fadeInDown 0.25s ease-out;
+    pointer-events: auto;
+  }
+
+  .user-info.mobile-open {
+    display: flex;
+  }
+
+  /* Access Management / Back button — must be tappable */
+  .user-info .secondary-button.access-button {
+    width: 100%;
+    text-align: center;
+    position: relative;
+    z-index: 1010;
+    pointer-events: auto;
+    order: 2;
+  }
+
+  /* Profile menu — flat layout in mobile menu */
+  .user-info .profile-menu {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: auto;
+    order: 1;
+  }
+
+  /* Profile menu hover dropdown — always visible in mobile menu */
+  .user-info .profile-menu::after {
+    display: none;
+  }
+
+  .user-info .user-chip {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 0.75rem;
+    pointer-events: auto;
+    cursor: default;
+  }
+
+  .user-info .profile-dropdown {
+    position: static;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    margin-top: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    min-width: auto;
+    display: none;
+  }
+
+  .user-info .profile-dropdown .logout-button {
+    width: 100%;
+    text-align: center;
+    padding: 0.75rem 1rem;
+    border-color: var(--status-error);
+    color: var(--status-error);
+    border-radius: 0.5rem;
+    pointer-events: auto;
+    position: relative;
+    z-index: 1010;
+    display: none;
+  }
+
+  .user-info .mobile-logout-button {
+    width: 100%;
+    display: block;
+    text-align: center;
+    border-color: var(--status-error);
+    color: var(--status-error);
+    order: 3;
+  }
+
+  .user-info .profile-dropdown .logout-button:hover {
+    background: var(--status-error-bg);
+  }
+
+  /* ---------- Dashboard header ---------- */
+  .dashboard-header {
+    padding: 1.5rem 1rem;
+    z-index: 1100;
+  }
+
+  .dashboard-header-row {
+    position: relative;
+  }
+
+  .dashboard-header-content {
+    gap: 0.75rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: clamp(1rem, 4vw, 1.5rem);
+  }
+
+  .brand-logo {
+    width: clamp(130px, 40vw, 200px);
+  }
+
+  /* ---------- Dashboard container ---------- */
+  .dashboard-container {
+    padding: 1rem 0.75rem;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* ---------- Panel ---------- */
+  .panel {
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  .panel:hover {
+    transform: none;
+  }
+
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .panel-search {
+    width: 100%;
+  }
+
+  .panel-search-input {
+    width: 100%;
+    min-width: unset;
+  }
+
+  /* ---------- Pipeline cards ---------- */
+  .pipeline-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .pipeline-card-action {
+    width: 100%;
+  }
+
+  .pipeline-card-action .secondary-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .pipeline-name {
+    font-size: 1rem;
+  }
+
+  .pipeline-meta-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  /* ---------- Build Info ---------- */
+  .current-build {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    padding: 1.25rem;
+  }
+
+  .stat-card:hover {
+    transform: none;
+  }
+
+  .stat-value {
+    font-size: clamp(1.25rem, 4vw, 1.75rem);
+  }
+
+  /* ---------- Build cards ---------- */
+  .build-card {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .build-card:hover {
+    transform: none;
+  }
+
+  /* ---------- Build search ---------- */
+  .build-search-form {
+    flex-direction: column;
+  }
+
+  .build-search-form .primary-button {
+    width: 100%;
+  }
+
+  /* ---------- Pipeline actions ---------- */
+  .job-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .job-actions button {
+    width: 100%;
+  }
+
+  /* ---------- Pipeline stages header ---------- */
+  .pipeline-stages-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .pipeline-stages-header .primary-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .pipeline-stages-header h2 {
+    font-size: 1rem;
+  }
+
+  /* ---------- Pipeline step logs ---------- */
+  .pipeline-step-logs {
+    font-size: 0.7rem;
+    max-height: 220px;
+  }
+
+  .pipeline-step summary {
+    gap: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .pipeline-step-name {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    min-width: 0;
+    flex: 1;
+  }
+
+  /* ---------- User management ---------- */
+  .user-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .user-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* ---------- Login – full colored background ---------- */
+  .login-container {
+    grid-template-columns: 1fr;
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+  }
+
+  .login-page {
+    background: #0a0a0f;
+  }
+
+  .login-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(0, 82, 204, 0.4) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(0, 168, 216, 0.3) 0%, transparent 50%),
+      radial-gradient(circle at 40% 70%, rgba(0, 153, 204, 0.35) 0%, transparent 50%);
+    animation: blobFloat 15s ease-in-out infinite;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .login-page::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 168, 216, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 168, 216, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+    animation: gridSlide 20s linear infinite;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .login-container,
+  .login-logo-section,
+  .login-form-mobile {
+    position: relative;
+    z-index: 2;
+  }
+
+  .login-container::after {
+    display: none;
+  }
+
+  /* Make left/colored section fill the entire screen */
+  .login-logo-section {
+    min-height: auto;
+    padding: 3rem 1.5rem 0.5rem;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background: transparent;
+  }
+
+  .login-logo-section::before,
+  .login-logo-section::after {
+    display: none;
+  }
+
+  .login-logo-content {
+    margin-top: 0;
+    align-items: center;
+    text-align: center;
+    gap: 0.25rem;
+  }
+
+  .login-logo-content img {
+    max-width: 180px;
+  }
+
+  /* Hide the desktop right-side form section */
+  .login-form-section {
+    display: none;
+  }
+
+  /* Show the mobile form inside the colored section */
+  .login-form-mobile {
+    display: flex;
+    position: relative;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    flex: 1;
+    padding: 0.75rem 1.5rem 2.5rem;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .login-form-mobile .login-form-container {
+    pointer-events: auto;
+    max-width: 420px;
+    width: 100%;
+    transform: translateY(-12px);
+  }
+
+  .login-form-mobile .login-form-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .login-form-mobile .login-form {
+    padding: 1.75rem;
+    background: rgba(15, 15, 20, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* ---------- Modals ---------- */
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .modal-content {
+    max-height: 85vh;
+    border-radius: 1rem;
+    max-width: calc(100% - 1rem);
+    width: calc(100% - 1rem);
+  }
+
+  .modal-header {
+    padding: 1rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+  }
+
+  .modal-footer .secondary-button,
+  .modal-footer .primary-button {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .build-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .logs-command-row {
+    grid-template-columns: 1fr;
+  }
+
+  .logs-output {
+    max-height: 40vh;
+    font-size: 0.72rem;
+  }
+}
+
+
+/* =====================================================
+   RESPONSIVE – SMALL PHONES (≤ 480px)
+   ===================================================== */
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .user-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-actions select,
+  .user-actions button,
+  .user-actions details {
+    width: 100%;
+  }
+
+  .user-actions select {
+    min-width: 0;
+  }
+
+  .ghost-button {
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  .login-container img {
+    max-width: 160px;
+  }
+
+  .login-container h1 {
+    font-size: 1.5rem;
+  }
+
+  .login-form-mobile {
+    padding-top: 1rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .brand-logo {
+    width: clamp(100px, 35vw, 160px);
+  }
+
+  .pipeline-meta-row {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  .pipeline-stages-header h2 {
+    font-size: 0.9rem;
+    word-break: break-word;
   }
 }

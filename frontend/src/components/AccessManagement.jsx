@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import UserManagement from './UserManagement';
 import { jenkinsService } from '../services/jenkinsService';
 import { userService } from '../services/userService';
@@ -9,6 +9,9 @@ function AccessManagement({ user, onLogout, onBack }) {
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState('');
   const [allAvailableJobs, setAllAvailableJobs] = useState([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
 
   const fetchUsers = async () => {
     setUsersLoading(true);
@@ -72,26 +75,43 @@ function AccessManagement({ user, onLogout, onBack }) {
             <div className="brand">
               <img className="brand-logo" src={logo} alt="Suprajit Logo" />
             </div>
-            <div className="user-info">
-              <button className="secondary-button access-button" type="button" onClick={onBack}>
-                Back to Dashboard
-              </button>
+
+            <button
+              className={`hamburger-toggle ${mobileMenuOpen ? 'open' : ''}`}
+              type="button"
+              aria-label="Toggle menu"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+
+            <div className={`user-info ${mobileMenuOpen ? 'mobile-open' : ''}`}>
               <div className="profile-menu">
                 <button className="user-chip user-chip-button" type="button">
                   <div className="user-name">{user?.displayName || user?.username}</div>
                   <div className="user-role">{user?.role?.toUpperCase()}</div>
                 </button>
                 <div className="profile-dropdown">
-                  <button className="logout-button" onClick={onLogout} type="button">
+                  <button className="logout-button" onClick={() => { closeMobileMenu(); onLogout(); }} type="button">
                     Logout
                   </button>
                 </div>
               </div>
+              <button className="secondary-button access-button" type="button" onClick={() => { closeMobileMenu(); onBack(); }}>
+                Back to Dashboard
+              </button>
+              <button className="secondary-button mobile-logout-button" type="button" onClick={() => { closeMobileMenu(); onLogout(); }}>
+                Logout
+              </button>
             </div>
           </div>
           <p className="dashboard-subtitle">Suprajit Technology Center</p>
         </div>
       </header>
+
+      {mobileMenuOpen && <div className="mobile-menu-overlay" onClick={closeMobileMenu} />}
 
       <div className="dashboard-container dashboard-container-narrow">
         <section className="dashboard-grid dashboard-grid-single">
@@ -111,6 +131,10 @@ function AccessManagement({ user, onLogout, onBack }) {
           </div>
         </section>
       </div>
+
+      <footer className="app-footer">
+        Jenkins Monitor · Suprajit Technology Center
+      </footer>
     </div>
   );
 }

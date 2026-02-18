@@ -32,6 +32,10 @@ function AccessDenied({ user, onLogout, onBack }) {
           </div>
         </section>
       </div>
+
+      <footer className="app-footer">
+        Jenkins Monitor · Suprajit Technology Center
+      </footer>
     </div>
   );
 }

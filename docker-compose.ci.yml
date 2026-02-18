@@ -91,6 +91,8 @@ services:
     image: nginx:alpine
     expose:
       - "80"
+    ports:
+      - "${NGINX_PORT:-5111}:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -101,8 +103,6 @@ services:
     networks:
       - devops_network
     restart: unless-stopped
-    ports:
-      - "5111:80"
 
   test_runner:
     image: node:18-bullseye-slim
@@ -134,7 +134,15 @@ services:
           rm -rf /var/lib/apt/lists/* &&
           node /app/scripts/ci/wait_for_http.js http://nginx/health &&
           cd /app/backend &&
-          npm install --include=dev &&
+          rm -rf /app/backend/node_modules &&
+          rm -rf /root/.npm /tmp/npm-cache /app/.npm-cache || true &&
+          npm cache clean --force &&
+          npm config set cache /app/.npm-cache --global &&
+          npm config set prefer-online true --global &&
+          npm config set fetch-retries 5 --global &&
+          npm config set fetch-retry-mintimeout 20000 --global &&
+          npm config set fetch-retry-maxtimeout 120000 --global &&
+          npm ci --include=dev --no-audit --no-fund &&
           npm test
 
 volumes:

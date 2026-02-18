@@ -15,6 +15,18 @@ const STATUS_CLASS_MAP = {
   QUEUED: 'in-progress',
 };
 
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= breakpoint);
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${breakpoint}px)`);
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    setIsMobile(mql.matches);
+    return () => mql.removeEventListener('change', handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
   const [stageData, setStageData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -29,8 +41,14 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
   const failedNextDotRef = useRef(null);
   const penultimateDotRef = useRef(null);
   const endDotRef = useRef(null);
+  const mobileTrackRef = useRef(null);
+  const mobileFailedDotRef = useRef(null);
+  const mobileEndDotRef = useRef(null);
   const [failurePath, setFailurePath] = useState('');
   const [failureBox, setFailureBox] = useState({ width: 0, height: 0 });
+  const [mobileFailurePath, setMobileFailurePath] = useState('');
+  const [mobileFailureBox, setMobileFailureBox] = useState({ width: 48, height: 0 });
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!jobName || !build?.buildNumber) return;
@@ -186,6 +204,55 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!isMobile || failedStageIndex < 0) {
+      setMobileFailurePath('');
+      return undefined;
+    }
+
+    const updatePath = () => {
+      if (!mobileTrackRef.current || !mobileFailedDotRef.current || !mobileEndDotRef.current) return;
+
+      const trackRect = mobileTrackRef.current.getBoundingClientRect();
+      const failedRect = mobileFailedDotRef.current.getBoundingClientRect();
+      const endRect = mobileEndDotRef.current.getBoundingClientRect();
+
+      const startX = failedRect.left - trackRect.left + failedRect.width / 2;
+      const startY = failedRect.top - trackRect.top + failedRect.height / 2;
+      const endX = endRect.left - trackRect.left + endRect.width / 2;
+      const endY = endRect.top - trackRect.top + endRect.height / 2;
+
+      const svgOffsetX = -10;
+      const svgWidth = 48;
+      const svgStartX = startX - svgOffsetX;
+      const svgEndX = endX - svgOffsetX;
+      const curveDepth = 24;
+      const sideX = Math.max(6, Math.min(svgStartX, svgEndX) - 18);
+      const safeEndY = Math.max(startY + curveDepth * 2, endY);
+
+      const path = `M ${svgStartX} ${startY}`
+        + ` C ${sideX} ${startY}, ${sideX} ${startY + curveDepth}, ${sideX} ${startY + curveDepth * 2}`
+        + ` L ${sideX} ${safeEndY - curveDepth * 2}`
+        + ` C ${sideX} ${safeEndY - curveDepth}, ${sideX} ${safeEndY}, ${svgEndX} ${safeEndY}`;
+
+  setMobileFailureBox({ width: svgWidth, height: trackRect.height });
+  setMobileFailurePath(path);
+    };
+
+    updatePath();
+
+    const observer = new ResizeObserver(updatePath);
+    if (mobileTrackRef.current) {
+      observer.observe(mobileTrackRef.current);
+    }
+
+    window.addEventListener('resize', updatePath);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updatePath);
+    };
+  }, [failedStageIndex, graphData.length, isMobile]);
+
   const renderGraph = () => {
   const totalStages = graphData.length;
   const nodeCount = totalStages + 2; // start + end
@@ -257,6 +324,93 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
     );
   };
 
+  const renderMobileGraph = () => {
+    const stageNodes = graphData.map((stage, index) => ({
+      ...stage,
+      stageIndex: index,
+    }));
+
+    const showFailurePath = failedStageIndex >= 0 && mobileFailurePath;
+    const failureViewHeight = Math.max(mobileFailureBox.height || 0, 1);
+
+    return (
+      <div className="pipeline-graph pipeline-graph-mobile">
+        <div
+          className="pipeline-mobile-track"
+          ref={mobileTrackRef}
+        >
+          {showFailurePath && (
+            <svg
+              className="pipeline-mobile-failure-svg"
+              viewBox={`0 0 ${mobileFailureBox.width} ${failureViewHeight}`}
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path className="pipeline-mobile-failure-path" d={mobileFailurePath} />
+            </svg>
+          )}
+          {/* Start node */}
+          <div className="pipeline-mobile-node-row">
+            <div className="pipeline-mobile-node-col">
+              <div className="pipeline-mobile-dot skipped start" />
+              {stageNodes.length > 0 && <div className={`pipeline-mobile-segment ${stageNodes[0]?.normalizedStatus || 'skipped'}`} />}
+            </div>
+            <div className="pipeline-mobile-label-col">
+              <span className="pipeline-mobile-label-text muted">Start</span>
+            </div>
+          </div>
+
+          {stageNodes.map((stage, index) => {
+            const nextStatus = index < stageNodes.length - 1
+              ? stageNodes[index + 1].normalizedStatus
+              : 'skipped';
+            const isLast = index === stageNodes.length - 1;
+
+            return (
+              <div key={`${stage.name}-${index}`} className="pipeline-mobile-node-row">
+                <div className="pipeline-mobile-node-col">
+                  <div
+                    className={`pipeline-mobile-dot ${stage.normalizedStatus}`}
+                    ref={index === failedStageIndex ? mobileFailedDotRef : undefined}
+                  >
+                    <span className="pipeline-mobile-dot-index">{index + 1}</span>
+                  </div>
+                  {!isLast && <div className={`pipeline-mobile-segment ${nextStatus}`} />}
+                  {isLast && <div className="pipeline-mobile-segment skipped" />}
+                </div>
+                <div className="pipeline-mobile-label-col">
+                  <div className={`pipeline-mobile-stage-info ${stage.normalizedStatus}`}>
+                    <span className="pipeline-mobile-stage-name">{stage.name}</span>
+                    <span className={`pipeline-mobile-stage-status ${stage.normalizedStatus}`}>
+                      {stage.normalizedStatus === 'success' ? '✓ Passed'
+                        : stage.normalizedStatus === 'failure' ? '✗ Failed'
+                        : stage.normalizedStatus === 'warning' ? '⚠ Aborted'
+                        : stage.normalizedStatus === 'in-progress' ? '● Running'
+                        : '○ Skipped'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* End node */}
+          <div className="pipeline-mobile-node-row">
+            <div className="pipeline-mobile-node-col">
+              <div
+                className={`pipeline-mobile-dot skipped end ${failedStageIndex >= 0 ? 'failure-end' : ''}`}
+                ref={mobileEndDotRef}
+              />
+            </div>
+            <div className="pipeline-mobile-label-col">
+              <span className="pipeline-mobile-label-text muted">End</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const steps = stageData?.steps || [];
   const failedStageName = isFailure ? stageData?.failedStage : null;
 
@@ -290,7 +444,7 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
         <div className="error-message">{error}</div>
       ) : (
         <>
-          {renderGraph()}
+          {isMobile ? renderMobileGraph() : renderGraph()}
 
           {isFailure && (
             <div className="pipeline-steps-section">
