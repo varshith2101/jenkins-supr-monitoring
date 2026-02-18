@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { authService } from '../services/authService';
 import logo from '../main-logo-2.png';
 
@@ -7,6 +8,10 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const location = useLocation();
+
+  /* The URL the user originally wanted before being redirected to /login */
+  const redirectTo = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,11 +20,14 @@ function Login({ onLogin }) {
 
     try {
       const data = await authService.login(username, password);
-      onLogin({
-        username: data.username,
-        role: data.role || 'viewer',
-        displayName: data.displayName || data.username,
-      });
+      onLogin(
+        {
+          username: data.username,
+          role: data.role || 'viewer',
+          displayName: data.displayName || data.username,
+        },
+        redirectTo,
+      );
     } catch (err) {
       setError(
         err.response?.data?.error ||

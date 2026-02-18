@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import UserManagement from './UserManagement';
 import { jenkinsService } from '../services/jenkinsService';
 import { userService } from '../services/userService';
 import logo from '../main-logo-2.png';
 
-function AccessManagement({ user, onLogout, onBack }) {
+function AccessManagement({ user, onLogout }) {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState('');
@@ -99,7 +101,7 @@ function AccessManagement({ user, onLogout, onBack }) {
                   </button>
                 </div>
               </div>
-              <button className="secondary-button access-button" type="button" onClick={() => { closeMobileMenu(); onBack(); }}>
+              <button className="secondary-button access-button" type="button" onClick={() => { closeMobileMenu(); navigate('/'); }}>
                 Back to Dashboard
               </button>
               <button className="secondary-button mobile-logout-button" type="button" onClick={() => { closeMobileMenu(); onLogout(); }}>
