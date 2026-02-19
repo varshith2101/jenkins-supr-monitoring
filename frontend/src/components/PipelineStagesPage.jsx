@@ -1,5 +1,6 @@
     import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import BuildLogsModal from './BuildLogsModal';
+import ViewParametersModal from './ViewParametersModal';
 import { jenkinsService } from '../services/jenkinsService';
 import { formatStatus, getStatusClass } from '../utils/formatters';
 
@@ -36,6 +37,7 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
   const [logsCommand, setLogsCommand] = useState('');
   const [logsLoading, setLogsLoading] = useState(false);
   const [logsError, setLogsError] = useState('');
+  const [showParams, setShowParams] = useState(false);
   const trackRef = useRef(null);
   const failedDotRef = useRef(null);
   const failedNextDotRef = useRef(null);
@@ -421,9 +423,16 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
           <button type="button" className="ghost-button" onClick={onBack}>Back</button>
           <h2>{jobName} · Build #{build?.buildNumber}</h2>
         </div>
-        <button type="button" className="primary-button" onClick={handleViewLogs}>
-          View Full Logs
-        </button>
+        <div className="pipeline-stages-header-actions">
+          {build?.hasParameters && (
+            <button type="button" className="secondary-button" onClick={() => setShowParams(true)}>
+              View Parameters
+            </button>
+          )}
+          <button type="button" className="primary-button" onClick={handleViewLogs}>
+            View Full Logs
+          </button>
+        </div>
       </div>
 
       <div className="pipeline-stages-subheader">
@@ -482,6 +491,14 @@ function PipelineStagesPage({ jobName, build, onBack, onLogout }) {
             setLogsContent('');
             setLogsCommand('');
           }}
+        />
+      )}
+
+      {showParams && build?.buildNumber && (
+        <ViewParametersModal
+          jobName={jobName}
+          buildNumber={build.buildNumber}
+          onClose={() => setShowParams(false)}
         />
       )}
     </div>

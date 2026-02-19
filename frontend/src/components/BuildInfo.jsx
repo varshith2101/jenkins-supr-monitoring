@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import BuildCard from './BuildCard';
 import BuildModal from './BuildModal';
+import ViewParametersModal from './ViewParametersModal';
 import { formatStatus, formatDuration, getStatusClass } from '../utils/formatters';
 import { jenkinsService } from '../services/jenkinsService';
 
@@ -11,6 +12,7 @@ function BuildInfo({ data, onViewStages, jobName: jobNameProp }) {
   const [selectedBuild, setSelectedBuild] = useState(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
+  const [paramsBuild, setParamsBuild] = useState(null);
 
   if (!lastBuild) {
     return (
@@ -109,6 +111,15 @@ function BuildInfo({ data, onViewStages, jobName: jobNameProp }) {
                 View Stages
               </button>
             )}
+            {lastBuild.hasParameters && (
+              <button
+                type="button"
+                className="view-logs-button"
+                onClick={() => setParamsBuild(lastBuild)}
+              >
+                View Parameters
+              </button>
+            )}
           </div>
         </div>
         {lastBuild.currentStage && lastBuild.status === 'IN_PROGRESS' && (
@@ -136,6 +147,7 @@ function BuildInfo({ data, onViewStages, jobName: jobNameProp }) {
                 canViewStages={canViewStages(build.status)}
                 onViewStages={() => handleViewStages(build)}
                 onSelectBuild={() => setSelectedBuild(build)}
+                onViewParameters={() => setParamsBuild(build)}
               />
             ))}
           </div>
@@ -165,10 +177,21 @@ function BuildInfo({ data, onViewStages, jobName: jobNameProp }) {
           build={selectedBuild}
           canViewStages={canViewStages(selectedBuild.status)}
           onViewStages={() => handleViewStages(selectedBuild)}
+          onViewParameters={() => {
+            setParamsBuild(selectedBuild);
+          }}
           onClose={() => {
             setSelectedBuild(null);
             setSearchError('');
           }}
+        />
+      )}
+
+      {paramsBuild && (
+        <ViewParametersModal
+          jobName={resolvedJobName}
+          buildNumber={paramsBuild.buildNumber}
+          onClose={() => setParamsBuild(null)}
         />
       )}
     </div>

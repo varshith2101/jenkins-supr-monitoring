@@ -546,6 +546,13 @@ class JenkinsModel {
             }
           }
 
+          const buildActions = buildData.actions || [];
+          const hasParameters = buildActions.some(
+            (action) =>
+              action._class === 'hudson.model.ParametersAction' ||
+              (action._class && action._class.includes('ParametersAction'))
+          );
+
           builds.push({
             buildNumber: buildData.number,
             status: buildData.result || (buildData.building ? 'IN_PROGRESS' : 'UNKNOWN'),
@@ -554,6 +561,7 @@ class JenkinsModel {
             building: buildData.building,
             currentStage: currentStage,
             failedStage: failedStage,
+            hasParameters: hasParameters,
           });
         } catch (err) {
           console.error(`Error fetching build ${buildNumber}:`, err.message);
@@ -683,6 +691,13 @@ class JenkinsModel {
         }
       }
 
+      const buildActions = buildData.actions || [];
+      const hasParameters = buildActions.some(
+        (action) =>
+          action._class === 'hudson.model.ParametersAction' ||
+          (action._class && action._class.includes('ParametersAction'))
+      );
+
       return {
         buildNumber: buildData.number,
         status: buildData.result || (buildData.building ? 'IN_PROGRESS' : 'UNKNOWN'),
@@ -691,6 +706,7 @@ class JenkinsModel {
         building: buildData.building,
         currentStage: currentStage,
         failedStage: failedStage,
+        hasParameters: hasParameters,
       };
     } catch (error) {
       console.error('Jenkins API Error:', error.message);
@@ -791,6 +807,46 @@ class JenkinsModel {
     } catch (error) {
       console.error('Jenkins API Error:', error.message);
       return { hasParameters: false, parameters: [] };
+    }
+  }
+
+  async getBuildParameters(jobName, buildNumber) {
+    try {
+      const jobPath = this.getJobPath(jobName);
+      const buildUrl = `${this.jenkinsUrl}/job/${jobPath}/${buildNumber}/api/json`;
+      const buildResponse = await axios.get(buildUrl, {
+        auth: this.auth,
+        timeout: 5000,
+        validateStatus: () => true,
+      });
+
+      if (buildResponse.status !== 200) {
+        throw new Error('Build not found');
+      }
+
+      const buildData = buildResponse.data;
+      const actions = buildData.actions || [];
+
+      // Find the ParametersAction which holds the actual parameter values used
+      const parametersAction = actions.find(
+        (action) =>
+          action._class === 'hudson.model.ParametersAction' ||
+          action._class?.includes('ParametersAction')
+      );
+
+      if (!parametersAction || !Array.isArray(parametersAction.parameters)) {
+        return { buildNumber, hasParameters: false, parameters: [] };
+      }
+
+      const parameters = parametersAction.parameters.map((param) => ({
+        name: param.name || 'Unknown',
+        value: param.value != null ? String(param.value) : 'N/A',
+      }));
+
+      return { buildNumber, hasParameters: true, parameters };
+    } catch (error) {
+      console.error('Jenkins Build Parameters Error:', error.message);
+      throw new Error('Failed to fetch build parameters');
     }
   }
 

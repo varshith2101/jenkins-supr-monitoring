@@ -1,6 +1,6 @@
 import { formatStatus, formatDuration, formatTimestamp, getStatusClass } from '../utils/formatters';
 
-function BuildCard({ build, canViewStages, onViewStages, onSelectBuild }) {
+function BuildCard({ build, canViewStages, onViewStages, onSelectBuild, onViewParameters }) {
   const statusClass = getStatusClass(build.status);
   const statusValue = String(build.status || '').toLowerCase();
   const isFailureStage = ['failure', 'failed'].includes(statusValue);
@@ -36,6 +36,20 @@ function BuildCard({ build, canViewStages, onViewStages, onSelectBuild }) {
         <div className={`status-pill ${getStatusClass(build.status)}`}>
           {formatStatus(build.status)}
         </div>
+        {build.hasParameters && (
+          <button
+            type="button"
+            className="view-logs-button"
+            onPointerDown={(event) => event.stopPropagation()}
+            onMouseDown={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.stopPropagation();
+              onViewParameters?.();
+            }}
+          >
+            View Params
+          </button>
+        )}
       </div>
       {build.currentStage && build.status === 'IN_PROGRESS' && (
         <div className="build-detail">
