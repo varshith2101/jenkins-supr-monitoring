@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom';
 import { formatStatus, formatDuration, formatTimestamp, getStatusClass } from '../utils/formatters';
 import easterEggImage from '../assets/asset.png';
 
-function BuildModal({ build, onClose, onViewStages, canViewStages }) {
+function BuildModal({ build, onClose, onViewStages, canViewStages, onViewParameters }) {
   if (!build) return null;
 
   const isEasterEgg = Number(build.buildNumber) === 696969;
@@ -75,6 +75,11 @@ function BuildModal({ build, onClose, onViewStages, canViewStages }) {
         </div>
         
         <div className="modal-footer">
+          {build.hasParameters && (
+            <button className="secondary-button" onClick={onViewParameters}>
+              View Parameters
+            </button>
+          )}
           {canViewStages && (
             <button className="primary-button" onClick={onViewStages}>
               View Stages

@@ -1,6 +1,6 @@
 import { formatStatus, formatDuration, formatTimestamp, getStatusClass } from '../utils/formatters';
 
-function BuildCard({ build, canViewStages, onViewStages, onSelectBuild }) {
+function BuildCard({ build, canViewStages, onViewStages, onSelectBuild, onViewParameters }) {
   const statusClass = getStatusClass(build.status);
   const statusValue = String(build.status || '').toLowerCase();
   const isFailureStage = ['failure', 'failed'].includes(statusValue);
@@ -69,6 +69,22 @@ function BuildCard({ build, canViewStages, onViewStages, onSelectBuild }) {
         <div className="build-detail-label">Timestamp</div>
         <div className="build-detail-value">{formatTimestamp(build.timestamp)}</div>
       </div>
+      {build.hasParameters && (
+        <div className="build-detail">
+          <button
+            type="button"
+            className="view-params-button"
+            onPointerDown={(event) => event.stopPropagation()}
+            onMouseDown={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.stopPropagation();
+              onViewParameters?.();
+            }}
+          >
+            View Parameters
+          </button>
+        </div>
+      )}
     </div>
   );
 }

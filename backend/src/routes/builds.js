@@ -88,6 +88,26 @@ router.get(
   }
 );
 
+// Get parameters used for a specific build
+router.get(
+  '/builds/:jobName/:buildNumber/parameters',
+  authenticateToken,
+  authorizePermissions(['build:read']),
+  async (req, res) => {
+    const { jobName, buildNumber } = req.params;
+
+    try {
+      const data = await jenkinsModel.getBuildParameters(jobName, parseInt(buildNumber));
+      res.json(data);
+    } catch (error) {
+      res.status(404).json({
+        error: 'Failed to fetch build parameters',
+        message: error.message,
+      });
+    }
+  }
+);
+
 // Get all Jenkins jobs
 router.get(
   '/jobs',
