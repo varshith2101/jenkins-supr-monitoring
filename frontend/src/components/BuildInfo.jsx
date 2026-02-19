@@ -111,6 +111,15 @@ function BuildInfo({ data, onViewStages, jobName: jobNameProp }) {
                 View Stages
               </button>
             )}
+            {lastBuild.hasParameters && (
+              <button
+                type="button"
+                className="view-logs-button"
+                onClick={() => setParamsBuild(lastBuild)}
+              >
+                View Parameters
+              </button>
+            )}
           </div>
         </div>
         {lastBuild.currentStage && lastBuild.status === 'IN_PROGRESS' && (
@@ -125,17 +134,6 @@ function BuildInfo({ data, onViewStages, jobName: jobNameProp }) {
             {getDurationOrStage(lastBuild)}
           </div>
         </div>
-        {lastBuild.hasParameters && (
-          <div className="stat-card">
-            <button
-              type="button"
-              className="view-params-button"
-              onClick={() => setParamsBuild(lastBuild)}
-            >
-              View Parameters
-            </button>
-          </div>
-        )}
       </div>
 
       {previousBuilds.length > 0 && (

@@ -36,6 +36,20 @@ function BuildCard({ build, canViewStages, onViewStages, onSelectBuild, onViewPa
         <div className={`status-pill ${getStatusClass(build.status)}`}>
           {formatStatus(build.status)}
         </div>
+        {build.hasParameters && (
+          <button
+            type="button"
+            className="view-logs-button"
+            onPointerDown={(event) => event.stopPropagation()}
+            onMouseDown={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.stopPropagation();
+              onViewParameters?.();
+            }}
+          >
+            View Params
+          </button>
+        )}
       </div>
       {build.currentStage && build.status === 'IN_PROGRESS' && (
         <div className="build-detail">
@@ -69,22 +83,6 @@ function BuildCard({ build, canViewStages, onViewStages, onSelectBuild, onViewPa
         <div className="build-detail-label">Timestamp</div>
         <div className="build-detail-value">{formatTimestamp(build.timestamp)}</div>
       </div>
-      {build.hasParameters && (
-        <div className="build-detail">
-          <button
-            type="button"
-            className="view-params-button"
-            onPointerDown={(event) => event.stopPropagation()}
-            onMouseDown={(event) => event.stopPropagation()}
-            onClick={(event) => {
-              event.stopPropagation();
-              onViewParameters?.();
-            }}
-          >
-            View Parameters
-          </button>
-        </div>
-      )}
     </div>
   );
 }
