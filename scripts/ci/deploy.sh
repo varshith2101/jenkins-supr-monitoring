@@ -36,9 +36,18 @@ $DC -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" down --remove-orphans || true
 # $DC -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" down -v --remove-orphans || true
 
 # -------------------------------------------------
-# 🚀 Start fresh stack
+# 🧹 Prune stale build cache to prevent tar corruption
 # -------------------------------------------------
+echo "[INFO] Pruning Docker build cache..."
+docker builder prune -f --filter "until=72h" || true
+
+# -------------------------------------------------
+# 🚀 Start fresh stack (no-cache to avoid corrupt layers)
+# -------------------------------------------------
+echo "[INFO] Building images (no cache)..."
+$DC -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" build --no-cache
+
 echo "[INFO] Starting fresh CI stack..."
-$DC -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" up -d --build
+$DC -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" up -d
 
 echo "[SUCCESS] Deployment complete."
