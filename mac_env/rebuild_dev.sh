@@ -2,20 +2,15 @@
 set -euo pipefail
 
 # -------------------------------------------------
-# macOS: ensure Docker is available and running
+# Ensure Docker is available and running
 # -------------------------------------------------
 if ! command -v docker >/dev/null 2>&1; then
-  DOCKER_DESKTOP_BIN="/Applications/Docker.app/Contents/Resources/bin"
-  if [ -x "$DOCKER_DESKTOP_BIN/docker" ]; then
-    export PATH="$DOCKER_DESKTOP_BIN:$PATH"
-  else
-    echo "[ERROR] Docker is not installed. Install Docker Desktop for Mac and try again."
-    exit 1
-  fi
+  echo "[ERROR] Docker is not installed."
+  exit 1
 fi
 
 if ! docker info >/dev/null 2>&1; then
-  echo "[ERROR] Docker daemon is not running. Start Docker Desktop and try again."
+  echo "[ERROR] Docker daemon is not running."
   exit 1
 fi
 

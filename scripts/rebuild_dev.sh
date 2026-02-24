@@ -2,12 +2,15 @@
 set -euo pipefail
 
 # -------------------------------------------------
-# Detect docker compose (v2 preferred, v1 fallback)
+# Detect docker compose (v2 plugin preferred, v1 fallback)
 # -------------------------------------------------
-if command -v docker-compose >/dev/null 2>&1; then
+if docker compose version >/dev/null 2>&1; then
+  DC="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
   DC="docker-compose"
 else
-  DC="docker compose"
+  echo "[ERROR] Docker Compose is not available."
+  exit 1
 fi
 
 # -------------------------------------------------

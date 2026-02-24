@@ -16,16 +16,11 @@ if [ -z "${COMPOSE_PROJECT_NAME:-}" ]; then
 fi
 
 # -------------------------------------------------
-# Ensure Docker is available (macOS-safe)
+# Ensure Docker is available
 # -------------------------------------------------
 if ! command -v docker >/dev/null 2>&1; then
-  DOCKER_DESKTOP_BIN="/Applications/Docker.app/Contents/Resources/bin"
-  if [ -x "$DOCKER_DESKTOP_BIN/docker" ]; then
-    export PATH="$DOCKER_DESKTOP_BIN:$PATH"
-  else
-    echo "[ERROR] Docker is not installed."
-    exit 1
-  fi
+  echo "[ERROR] Docker is not installed."
+  exit 1
 fi
 
 if ! docker info >/dev/null 2>&1; then
