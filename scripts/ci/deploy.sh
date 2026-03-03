@@ -12,14 +12,18 @@ fi
 COMPOSE_FILE="${COMPOSE_FILE_OVERRIDE:-docker-compose.ci.yml}"
 
 # -------------------------------------------------
-# Detect docker compose
+# Detect docker compose (Engine plugin or standalone)
 # -------------------------------------------------
+# Add system plugin path in case Jenkins PATH doesn't include it
+export PATH="/usr/libexec/docker/cli-plugins:/usr/lib/docker/cli-plugins:$PATH"
+
 if docker compose version >/dev/null 2>&1; then
   DC="docker compose"
 elif command -v docker-compose >/dev/null 2>&1; then
   DC="docker-compose"
 else
-  echo "[ERROR] Docker Compose not available."
+  echo "[ERROR] Docker Compose not available. Install docker-compose-plugin:"
+  echo "        sudo apt-get install docker-compose-plugin"
   exit 1
 fi
 

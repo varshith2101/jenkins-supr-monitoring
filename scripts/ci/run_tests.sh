@@ -29,8 +29,11 @@ if ! docker info >/dev/null 2>&1; then
 fi
 
 # -------------------------------------------------
-# Detect docker compose (v2 preferred)
+# Detect docker compose (Engine plugin or standalone)
 # -------------------------------------------------
+# Add system plugin path in case Jenkins PATH doesn't include it
+export PATH="/usr/libexec/docker/cli-plugins:/usr/lib/docker/cli-plugins:$PATH"
+
 if docker compose version >/dev/null 2>&1; then
   DC="docker compose"
 elif command -v docker-compose >/dev/null 2>&1; then
